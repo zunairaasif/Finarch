@@ -69,7 +69,7 @@ const Projects = () => {
   return (
     <Grid>
       <Navbar />
-      <Grid container sx={styles.projects}>
+      <Grid gap={6} container sx={styles.projects}>
         <Box sx={styles.tabs}>
           <Tabs
             variant="scrollable"
@@ -114,7 +114,7 @@ const Projects = () => {
             value === 4) &&
           filteredProjects.length === 0 ? (
           <Typography variant="body1" sx={styles.noData}>
-            No data found
+            No Project Yet!
           </Typography>
         ) : (
           filteredProjects.map((data, index) => {
@@ -132,7 +132,7 @@ const Projects = () => {
               >
                 {animate === index ? (
                   <div style={styles.animation}>
-                    <Box gap={1} sx={{ display: "flex" }}>
+                    <Box gap={10} sx={{ display: "flex" }}>
                       <Grid gap={2} sx={styles.wrapper}>
                         <Box sx={styles.info}>
                           <Typography variant="body1">

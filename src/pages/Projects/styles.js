@@ -6,7 +6,6 @@ const styles = {
   },
   tabs: {
     display: "flex",
-    marginBottom: 5,
     justifyContent: "center",
     maxWidth: { xs: 320, sm: "100%" },
   },
@@ -38,7 +37,6 @@ const styles = {
     alignSelf: "center",
   },
   container: {
-    marginTop: 3,
     display: "flex",
     alignSelf: "center",
     justifyContent: "center",
