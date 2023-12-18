@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { Box, Grid, Typography, useMediaQuery, useTheme } from "@mui/material";
 
 import styles from "./styles";
@@ -27,10 +28,13 @@ const PrivacyPolicy = () => {
         >
           <Typography variant="h5">Privacy Policy for Finarch</Typography>
           <Typography variant="body1">
-            At finarch.co, accessible from https://finarch.co, one of our main
-            priorities is the privacy of our visitors. This Privacy Policy
-            document contains types of information that is collected and
-            recorded by finarch.co and how we use it.
+            At finarch.co, accessible from{" "}
+            <Link to="https://www.finarch.co/" target="_blank">
+              https://www.finarch.co/
+            </Link>
+            , one of our main priorities is the privacy of our visitors. This
+            Privacy Policy document contains types of information that is
+            collected and recorded by finarch.co and how we use it.
           </Typography>
           <Typography variant="body1">
             If you have additional questions or require more information about

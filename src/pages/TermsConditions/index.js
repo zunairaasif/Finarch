@@ -1,9 +1,9 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { Box, Grid, Typography, useMediaQuery, useTheme } from "@mui/material";
 
 import styles from "./styles";
 import Navbar from "../../components/Navbar";
-import { Link } from "react-router-dom";
 
 const TermsConditions = () => {
   const theme = useTheme();
@@ -29,8 +29,10 @@ const TermsConditions = () => {
           <Typography variant="h5">Introduction</Typography>
           <Typography variant="body1">
             These Website Standard Terms and Conditions written on this webpage
-            shall manage your use of our website, finarch.co accessible at
-            https://finarch.co.
+            shall manage your use of our website, finarch.co accessible at{" "}
+            <Link to="https://www.finarch.co/" target="_blank">
+              https://www.finarch.co/
+            </Link>
           </Typography>
           <Typography variant="body1">
             These Terms will be applied fully and affect to your use of this
