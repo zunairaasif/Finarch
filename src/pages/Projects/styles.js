@@ -42,21 +42,19 @@ const styles = {
     justifyContent: "center",
     transition: "transform .8s, margin .8s",
   },
-  animation: {
-    width: "100%",
-    cursor: "grab",
-    overflowX: "auto",
-    whiteSpace: "nowrap",
-  },
-  animate: {
-    marginTop: 100,
+  zoom: {
+    marginTop: 10,
     display: "flex",
-    marginBottom: 100,
-    overflowX: "auto",
+    marginBottom: 10,
     alignSelf: "center",
     transform: "scale(1.3)",
     justifyContent: "center",
     transition: "transform .8s, margin 1s",
+  },
+  scroll: {
+    overflowX: "auto",
+    overflow: "hidden",
+    whiteSpace: "nowrap",
   },
   title: {
     display: "flex",

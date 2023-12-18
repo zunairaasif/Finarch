@@ -8,7 +8,7 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import axios from "axios";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import CircularProgress from "@mui/material/CircularProgress";
 
 import styles from "./styles";
@@ -66,8 +66,57 @@ const Projects = () => {
       ? project
       : project.filter((data) => data.type === getTabType(value));
 
+  const containerRef = useRef(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(null);
+  const [scrollLeft, setScrollLeft] = useState(0);
+
+  const handleMouseDown = (e) => {
+    setIsDragging(true);
+    setStartX(e.pageX);
+    setScrollLeft(containerRef.current.scrollLeft);
+  };
+
+  const handleMouseMove = (e) => {
+    if (isDragging) {
+      const x = e.pageX;
+      const walk = (x - startX) * 2; // Adjust the scrolling speed if needed
+
+      if (e.target.tagName.toLowerCase() !== "img") {
+        containerRef.current.scrollLeft = scrollLeft - walk;
+        e.preventDefault();
+      }
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleTouchStart = (e) => {
+    if (containerRef.current) {
+      setIsDragging(true);
+      setStartX(e.touches[0].pageX);
+      setScrollLeft(containerRef.current.scrollLeft);
+    }
+  };
+
+  const handleTouchMove = (e) => {
+    if (isDragging && containerRef.current) {
+      const x = e.touches[0].pageX;
+      const walk = (x - startX) * 2; // Adjust the scrolling speed if needed
+      containerRef.current.scrollLeft = scrollLeft - walk;
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (containerRef.current) {
+      setIsDragging(false);
+    }
+  };
+
   return (
-    <Grid>
+    <>
       <Navbar />
       <Grid gap={6} container sx={styles.projects}>
         <Box sx={styles.tabs}>
@@ -122,16 +171,29 @@ const Projects = () => {
             return (
               <Grid
                 item
-                md={9.5}
-                sm={9.5}
                 xs={10}
+                sm={9.5}
+                md={9.5}
                 container
                 key={index}
                 onClick={() => setAnimate(index)}
-                style={animate === index ? styles.animate : styles.container}
+                sx={animate === index ? styles.zoom : styles.container}
               >
                 {animate === index ? (
-                  <div style={styles.animation}>
+                  <div
+                    style={{
+                      ...styles.scroll,
+                      cursor: isDragging ? "grabbing" : "grab",
+                    }}
+                    ref={containerRef}
+                    onMouseUp={handleMouseUp}
+                    onMouseLeave={handleMouseUp}
+                    onMouseDown={handleMouseDown}
+                    onMouseMove={handleMouseMove}
+                    onTouchEnd={handleTouchEnd}
+                    onTouchMove={handleTouchMove}
+                    onTouchStart={handleTouchStart}
+                  >
                     <Box gap={10} sx={{ display: "flex" }}>
                       <Grid gap={2} sx={styles.wrapper}>
                         <Box sx={styles.info}>
@@ -349,7 +411,7 @@ const Projects = () => {
           })
         )}
       </Grid>
-    </Grid>
+    </>
   );
 };
 
