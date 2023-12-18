@@ -82,10 +82,7 @@ const Projects = () => {
       const x = e.pageX;
       const walk = (x - startX) * 2; // Adjust the scrolling speed if needed
 
-      if (e.target.tagName.toLowerCase() !== "img") {
-        containerRef.current.scrollLeft = scrollLeft - walk;
-        e.preventDefault();
-      }
+      containerRef.current.scrollLeft = scrollLeft - walk;
     }
   };
 
@@ -181,11 +178,8 @@ const Projects = () => {
               >
                 {animate === index ? (
                   <div
-                    style={{
-                      ...styles.scroll,
-                      cursor: isDragging ? "grabbing" : "grab",
-                    }}
                     ref={containerRef}
+                    style={styles.scroll}
                     onMouseUp={handleMouseUp}
                     onMouseLeave={handleMouseUp}
                     onMouseDown={handleMouseDown}
@@ -194,7 +188,7 @@ const Projects = () => {
                     onTouchMove={handleTouchMove}
                     onTouchStart={handleTouchStart}
                   >
-                    <Box gap={10} sx={{ display: "flex" }}>
+                    <Box gap={10} sx={styles.flex}>
                       <Grid gap={2} sx={styles.wrapper}>
                         <Box sx={styles.info}>
                           <Typography variant="body1">
@@ -246,7 +240,7 @@ const Projects = () => {
                           height={300}
                           loading="lazy"
                           alt={index + 1}
-                          style={{ margin: "0 10px" }}
+                          style={styles.img}
                           width={isMatch ? "100%" : "35%"}
                         />
                       ))}

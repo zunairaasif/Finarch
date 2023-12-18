@@ -56,9 +56,17 @@ const styles = {
     overflow: "hidden",
     whiteSpace: "nowrap",
   },
+  img: {
+    margin: "0 10px",
+    userDrag: "none",
+    pointerEvents: "none",
+  },
   title: {
     display: "flex",
     marginBottom: 2,
+  },
+  flex: {
+    display: "flex",
   },
   wrapper: {
     display: "flex",
