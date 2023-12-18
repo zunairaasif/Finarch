@@ -2,6 +2,7 @@ import {
   Box,
   Menu,
   Grid,
+  Alert,
   Dialog,
   Button,
   Toolbar,
@@ -12,7 +13,6 @@ import {
   TextField,
   Typography,
   useMediaQuery,
-  Alert,
 } from "@mui/material";
 import axios from "axios";
 import Slide from "@mui/material/Slide";
@@ -368,9 +368,9 @@ const Navbar = () => {
       ) : (
         <Grid sx={styles.grid}>
           <Grid container gap={2}>
-            <Box sx={styles.quote} onClick={handleClickOpen}>
+            {/* <Box sx={styles.quote} onClick={handleClickOpen}>
               <Typography variant="h6">Get a Quote</Typography>
-            </Box>
+            </Box> */}
 
             <Dialog
               fullScreen
