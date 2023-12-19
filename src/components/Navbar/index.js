@@ -240,18 +240,25 @@ const Navbar = () => {
         break;
 
       case 3:
-        if (color === 4) {
-          setArea(length * width);
-        } else {
-          setArea(sizes[color]?.area);
+        if (color === 4 && (!length || !width)) {
+          setLengthError(!length);
+          setWidthError(!width);
+          return;
         }
 
-        setPropertySize(sizes[color]?.size);
-        setPropertyPrice(totalWeightage * area);
+        const calculatedArea =
+          color === 4 ? length * width : sizes[color]?.area;
 
-        if (area !== null && area !== undefined && area !== 0) {
-          setActiveStep((prevStep) => prevStep + 1);
+        if (!calculatedArea) {
+          setStep3(true);
+          return;
         }
+
+        setArea(calculatedArea);
+        setLengthError(false);
+        setWidthError(false);
+
+        setActiveStep((prevStep) => prevStep + 1);
         break;
 
       case 4:
