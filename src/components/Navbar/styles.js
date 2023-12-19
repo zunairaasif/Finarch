@@ -92,8 +92,19 @@ const styles = {
     alignItems: "center",
     flexDirection: "column",
   },
+  loader: {
+    height: "100vh",
+    display: "flex",
+    alignItems: "center",
+    flexDirection: "column",
+    justifyContent: "center",
+    backgroundColor: "black",
+  },
+  loaderColor: {
+    color: "white",
+  },
   margin: {
-    marginBottom: 4,
+    marginBottom: 3,
   },
   wrap: {
     display: "flex",
@@ -172,6 +183,12 @@ const styles = {
     justifyContent: "center",
   },
   btn: {
+    height: 50,
+    backgroundColor: "black",
+    "&:hover": { backgroundColor: "black" },
+  },
+  download: {
+    width: 500,
     height: 50,
     backgroundColor: "black",
     "&:hover": { backgroundColor: "black" },

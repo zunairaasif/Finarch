@@ -20,6 +20,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import CircularProgress from "@mui/material/CircularProgress";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
 import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
@@ -28,6 +29,7 @@ import styles from "./styles";
 import { pages } from "./data";
 import DrawerComp from "./drawer";
 import logo from "../../assets/images/logo.svg";
+import loader from "../../assets/images/loading-logo.svg";
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -38,45 +40,50 @@ const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [name, setName] = useState("");
+  const [plot, setPlot] = useState("");
+  const [city, setCity] = useState("");
+  const [type, setType] = useState("");
   const [quote, setQuote] = useState([]);
   const [width, setWidth] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [area, setArea] = useState(null);
-  const [length, setLength] = useState("");
-  const [plot, setPlot] = useState("");
-  const [street, setStreet] = useState("");
-  const [city, setCity] = useState("");
-  const [country, setCountry] = useState("");
-  const [propertySize, setPropertySize] = useState("");
   const [color, setColor] = useState(null);
-  const [propertyColor, setPropertyColor] = useState(null);
+  const [length, setLength] = useState("");
+  const [street, setStreet] = useState("");
+  const [step1, setStep1] = useState(false);
+  const [step2, setStep2] = useState(false);
+  const [step3, setStep3] = useState(false);
+  const [country, setCountry] = useState("");
   const [checked, setChecked] = useState(true);
   const [services, setServices] = useState([]);
   const [open, setOpen] = React.useState(false);
+  const [loading, setLoading] = useState(false);
   const baseUrl = process.env.REACT_APP_BASE_URL;
   const [anchorEl, setAnchorEl] = useState(null);
-  const [propertyPrice, setPropertyPrice] = useState(null);
+  const [weightage, setWeightage] = useState([]);
   const [activeStep, setActiveStep] = useState(0);
+  const [isMenuOpen, setMenuOpen] = useState(false);
   const [showError, setShowError] = useState(false);
-  const [lengthError, setLengthError] = useState(false);
-  const [widthError, setWidthError] = useState(false);
   const [plotError, setPlotError] = useState(false);
-  const [streetError, setStreetError] = useState(false);
   const [cityError, setCityError] = useState(false);
-  const [countryError, setCountryError] = useState(false);
-  const [type, setType] = useState("");
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
+  const [openFinal, setOpenFinal] = useState(false);
   const [phoneError, setPhoneError] = useState(false);
   const [emailError, setEmailError] = useState(false);
-  const [isMenuOpen, setMenuOpen] = useState(false);
-  const [step2, setStep2] = useState(false);
-  const [step3, setStep3] = useState(false);
+  const [widthError, setWidthError] = useState(false);
+  const [propertySize, setPropertySize] = useState("");
+  const [lengthError, setLengthError] = useState(false);
+  const [streetError, setStreetError] = useState(false);
   const [hoveredIndex, setHoveredIndex] = useState(null);
+  const [countryError, setCountryError] = useState(false);
+  const [propertyColor, setPropertyColor] = useState(null);
+  const [propertyPrice, setPropertyPrice] = useState(null);
+  const [totalWeightage, setTotalWeightage] = useState(null);
   const isMatch = useMediaQuery(theme.breakpoints.down("sm"));
   const [isMenuIconRotated, setMenuIconRotation] = useState(false);
   const [selectedSubServices, setSelectedSubServices] = useState([]);
-  const [weightage, setWeightage] = useState([]);
-  const [totalWeightage, setTotalWeightage] = useState(null);
+
+  //************* OPEN QUOTATION ********** */
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -86,18 +93,11 @@ const Navbar = () => {
     setOpen(false);
   };
 
-  const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
-    setMenuOpen(!isMenuOpen);
-    setMenuIconRotation((prevRotation) => !prevRotation);
-  };
-
-  const handleClose = () => {
-    setMenuOpen(false);
-    setMenuIconRotation(false);
-  };
+  //************* RESET ********** */
 
   const handleReset = () => {
+    setActiveStep(0);
+
     setName("");
     setType("");
     setPlot("");
@@ -114,7 +114,6 @@ const Navbar = () => {
     setHoveredIndex(null);
     setPropertyColor(null);
     setSelectedSubServices([]);
-    setActiveStep(0);
   };
 
   useEffect(() => {
@@ -123,30 +122,93 @@ const Navbar = () => {
     }
   }, [open]);
 
+  //************* BACK CLICK ********** */
+
+  const handleBackClick = () => {
+    setActiveStep((prevStep) => Math.max(prevStep - 1, 0));
+  };
+
+  //************* INITIALIZATION ********** */
+
   const steps = [0, 1, 2, 3, 4, 5, 6];
   const propertyType = ["Commercial", "Residential", "Industrial", "Other"];
+  const sizes = [
+    {
+      size: "5 Marla",
+      area: 1125,
+    },
+    {
+      size: "10 Marla",
+      area: 2250,
+    },
+    {
+      size: "1 Kanal",
+      area: 4500,
+    },
+    {
+      size: "2 Kanal",
+      area: 9000,
+    },
+    {
+      size: "Custom Size",
+    },
+  ];
 
-  const getServiceName = () => {
-    // Initialize an empty array to store service names
-    const selectedServiceNames = [];
+  //************* GET SERVICES ********** */
 
-    // Iterate over services array
-    services.forEach((service, serviceIndex) => {
-      // Check if any sub-service of the current service is selected
-      const isSelected = service.subServices.some(
-        (subService, subServiceIndex) =>
-          selectedSubServices.includes(subService.name)
+  useEffect(() => {
+    setLoading(true);
+    axios
+      .get(`${baseUrl}/service/getAllServices`)
+      .then((response) => {
+        const service = response.data.data;
+        setServices(service);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        setLoading(false);
+      });
+  }, [baseUrl]);
+
+  //************* CHECKBOX ********** */
+
+  const handleCheckboxChange = (event, subServiceData, serviceData) => {
+    if (event.target.checked) {
+      setSelectedSubServices((prevSelected) => [
+        ...prevSelected,
+        subServiceData.name,
+      ]);
+
+      setWeightage((prevSelected) => [
+        ...prevSelected,
+        subServiceData.weightage * serviceData.rate,
+      ]);
+    } else {
+      setSelectedSubServices((prevSelected) =>
+        prevSelected.filter((selected) => selected !== subServiceData.name)
       );
 
-      // If at least one sub-service is selected, add the service name to the array
-      if (isSelected) {
-        selectedServiceNames.push(service.service_name);
-      }
-    });
-
-    // Join the array of service names into a string
-    return selectedServiceNames.join(", ");
+      setWeightage((prevSelected) =>
+        prevSelected.filter(
+          (selected) => selected !== subServiceData.weightage * serviceData.rate
+        )
+      );
+    }
   };
+
+  //************* WEIGHTAGE ********** */
+
+  useEffect(() => {
+    const totalWeightage = weightage.reduce(
+      (accumulator, currentValue) => accumulator + currentValue,
+      0
+    );
+
+    setTotalWeightage(totalWeightage);
+  }, [weightage]);
+
+  //************* BUTTON CONDITIONS ********** */
 
   const handleNextClick = () => {
     switch (activeStep) {
@@ -162,7 +224,7 @@ const Navbar = () => {
 
       case 1:
         if (selectedSubServices.length === 0) {
-          setStep2(true);
+          setStep1(true);
         } else {
           setActiveStep((prevStep) => prevStep + 1);
         }
@@ -173,7 +235,7 @@ const Navbar = () => {
         if (type) {
           setActiveStep((prevStep) => prevStep + 1);
         } else {
-          setStep3(true);
+          setStep2(true);
         }
         break;
 
@@ -215,7 +277,7 @@ const Navbar = () => {
         break;
 
       case 5:
-        if (phone.trim() === "") {
+        if (phone.trim() === "" || !/^(\+92)?\d{10}$|^\d{11}$/.test(phone)) {
           setPhoneError(true);
         } else {
           setPhone(phone);
@@ -225,19 +287,29 @@ const Navbar = () => {
         break;
 
       default:
-        if (email.trim() === "") {
+        if (email.trim() === "" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
           setEmailError(true);
         } else {
           setEmail(email);
           setEmailError(false);
-          setActiveStep((prevStep) => prevStep + 1);
         }
+
         finish();
         break;
-
-      // window.open(quote.pdf_url, "_blank");
     }
   };
+
+  //************ Download PDF *********** */
+
+  const handleClickFinalOpen = () => {
+    setOpenFinal(true);
+  };
+
+  const handleClickFinalClose = () => {
+    setOpenFinal(false);
+  };
+
+  //************* POST QUOTATION ********** */
 
   const finish = async () => {
     const postData = {
@@ -256,103 +328,44 @@ const Navbar = () => {
       total_rate: weightage,
     };
 
-    try {
-      await axios.post(`${baseUrl}/quotes/postQuotation`, postData);
+    // try {
+    //   await axios.post(`${baseUrl}/quotes/postQuotation`, postData);
+    //   console.log("Data posted");
+    //   handleClickClose();
 
-      console.log("Data posted");
-    } catch (error) {
-      console.error("Error:", error);
-    }
+    //   handleClickFinalOpen();
+    //   axios
+    //     .get(`${baseUrl}/quotes/getQuotes`)
+    //     .then((response) => {
+    //       const quote = response.data.data;
+    //       if (quote.length > 0) {
+    //         const lastQuote = quote[quote.length - 1];
+    //         setQuote(lastQuote);
+    //         console.log(lastQuote);
+    //       } else {
+    //         console.log("No quotes available.");
+    //       }
+    //     })
+    //     .catch((error) => {
+    //       console.error("Get quotation Error:", error);
+    //     });
+    // } catch (error) {
+    //   console.error("Post quotation Error:", error);
+    // }
   };
 
-  const handleBackClick = () => {
-    setActiveStep((prevStep) => Math.max(prevStep - 1, 0));
+  //************ MENU *********** */
+
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+    setMenuOpen(!isMenuOpen);
+    setMenuIconRotation((prevRotation) => !prevRotation);
   };
 
-  useEffect(() => {
-    axios
-      .get(`${baseUrl}/service/getAllServices`)
-      .then((response) => {
-        const service = response.data.data;
-        setServices(service);
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-      });
-  }, [baseUrl]);
-
-  const sizes = [
-    {
-      size: "5 Marla",
-      area: 1125,
-    },
-    {
-      size: "10 Marla",
-      area: 2250,
-    },
-    {
-      size: "1 Kanal",
-      area: 4500,
-    },
-    {
-      size: "2 Kanal",
-      area: 9000,
-    },
-    {
-      size: "Custom Size",
-    },
-  ];
-
-  useEffect(() => {
-    axios
-      .get(`${baseUrl}/quotes/getQuotes`)
-      .then((response) => {
-        const quote = response.data.data;
-
-        if (quote.length > 0) {
-          const lastQuote = quote[quote.length - 1];
-          setQuote(lastQuote);
-        } else {
-          console.log("No quotes available.");
-        }
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-      });
-  }, [baseUrl]);
-
-  const handleCheckboxChange = (event, subServiceData, serviceData) => {
-    if (event.target.checked) {
-      setSelectedSubServices((prevSelected) => [
-        ...prevSelected,
-        subServiceData.name,
-      ]);
-
-      setWeightage((prevSelected) => [
-        ...prevSelected,
-        subServiceData.weightage * serviceData.rate,
-      ]);
-    } else {
-      setSelectedSubServices((prevSelected) =>
-        prevSelected.filter((selected) => selected !== subServiceData.name)
-      );
-
-      setWeightage((prevSelected) =>
-        prevSelected.filter(
-          (selected) => selected !== subServiceData.weightage * serviceData.rate
-        )
-      );
-    }
+  const handleClose = () => {
+    setMenuOpen(false);
+    setMenuIconRotation(false);
   };
-
-  useEffect(() => {
-    const totalWeightage = weightage.reduce(
-      (accumulator, currentValue) => accumulator + currentValue,
-      0
-    );
-
-    setTotalWeightage(totalWeightage);
-  }, [weightage]);
 
   return (
     <Toolbar sx={isMatch ? styles.toolbarView : styles.toolbar}>
@@ -368,42 +381,35 @@ const Navbar = () => {
       ) : (
         <Grid sx={styles.grid}>
           <Grid container gap={2}>
-            {/* <Box sx={styles.quote} onClick={handleClickOpen}>
+            <Box sx={styles.quote} onClick={handleClickOpen}>
               <Typography variant="h6">Get a Quote</Typography>
-            </Box> */}
+            </Box>
 
             <Dialog
               fullScreen
               open={open}
-              onClose={handleClose}
+              onClose={handleClickClose}
               TransitionComponent={Transition}
             >
               <Snackbar
-                open={step2}
+                open={step1 || step2 || step3}
                 autoHideDuration={3000}
                 TransitionComponent={Slide}
-                onClose={() => setStep2(false)}
+                onClose={() => {
+                  setStep1(false);
+                  setStep2(false);
+                  setStep3(false);
+                }}
                 TransitionProps={{ direction: "left" }}
                 anchorOrigin={{ vertical: "top", horizontal: "right" }}
               >
-                <Alert sx={styles.alert} severity="error">
+                <Alert severity={"error"}>
                   <Typography variant="body1">
-                    Please select a service!
-                  </Typography>
-                </Alert>
-              </Snackbar>
-
-              <Snackbar
-                open={step3}
-                autoHideDuration={3000}
-                TransitionComponent={Slide}
-                onClose={() => setStep3(false)}
-                TransitionProps={{ direction: "left" }}
-                anchorOrigin={{ vertical: "top", horizontal: "right" }}
-              >
-                <Alert sx={styles.alert} severity="error">
-                  <Typography variant="body1">
-                    Please select a proprty type!
+                    {step1
+                      ? "Please select a service!"
+                      : step2
+                      ? "Please select a proprty type!"
+                      : "Please select property size!"}
                   </Typography>
                 </Alert>
               </Snackbar>
@@ -414,12 +420,13 @@ const Navbar = () => {
                   gap={5}
                   container
                   sx={
-                    activeStep === 0 ? styles.container : styles.containerView
+                    activeStep === 1 || activeStep === 2
+                      ? styles.containerView
+                      : styles.container
                   }
-                  md={activeStep === 0 ? 6 : 10}
+                  md={activeStep === 1 || activeStep === 3 ? 10 : 6}
                 >
                   {activeStep === 0 ? (
-                    // || activeStep === 7
                     <CloseIcon sx={styles.font} onClick={handleClickClose} />
                   ) : (
                     <Grid container sx={styles.justify}>
@@ -434,13 +441,14 @@ const Navbar = () => {
                   <Grid
                     container
                     sx={styles.info}
-                    gap={activeStep === 3 || activeStep === 4 ? 3 : 5}
+                    gap={
+                      (activeStep === 3 && color === 4) || activeStep === 4
+                        ? 3
+                        : 5
+                    }
                   >
                     <Box gap={1} sx={styles.wrap}>
                       {
-                        // activeStep === 7 ? (
-                        //   <CheckCircleIcon sx={styles.icon} />
-                        // ) : (
                         steps.map((step, index) => (
                           <Box
                             key={index}
@@ -456,7 +464,6 @@ const Navbar = () => {
                         // )
                       }
                     </Box>
-
                     {activeStep === 0 && (
                       <>
                         <Typography variant="h2">What is Your Name?</Typography>
@@ -478,7 +485,6 @@ const Navbar = () => {
                         </Box>
                       </>
                     )}
-
                     {activeStep === 1 && (
                       <>
                         <Typography variant="h3">
@@ -551,7 +557,6 @@ const Navbar = () => {
                         </Grid>
                       </>
                     )}
-
                     {activeStep === 2 && (
                       <>
                         <Typography variant="h4">
@@ -583,7 +588,6 @@ const Navbar = () => {
                         </Grid>
                       </>
                     )}
-
                     {activeStep === 3 && (
                       <>
                         <Typography variant="h4">
@@ -690,164 +694,125 @@ const Navbar = () => {
                         )}
                       </>
                     )}
-
                     {activeStep === 4 && (
                       <>
                         <Typography variant="h3">Enter The Address!</Typography>
 
-                        <Grid item md={6} gap={2} container sx={styles.align}>
-                          <Box sx={styles.block}>
-                            <TextField
-                              value={plot}
-                              error={plotError}
-                              variant="outlined"
-                              label="House/Plot Number"
-                              onChange={(e) => {
-                                setPlot(e.target.value);
-                                setPlotError(false);
-                              }}
-                            />
-                            <Typography variant="body2" sx={styles.error}>
-                              {plotError
-                                ? "Please Enter House/Plot Number!"
-                                : ""}
-                            </Typography>
-                          </Box>
+                        <Box sx={styles.block}>
+                          <TextField
+                            value={plot}
+                            error={plotError}
+                            variant="outlined"
+                            label="House/Plot Number"
+                            onChange={(e) => {
+                              setPlot(e.target.value);
+                              setPlotError(false);
+                            }}
+                          />
+                          <Typography variant="body2" sx={styles.error}>
+                            {plotError ? "Please Enter House/Plot Number!" : ""}
+                          </Typography>
+                        </Box>
 
-                          <Box sx={styles.block}>
-                            <TextField
-                              value={street}
-                              error={streetError}
-                              variant="outlined"
-                              label="Block/Street Number"
-                              onChange={(e) => {
-                                setStreet(e.target.value);
-                                setStreetError(false);
-                              }}
-                            />
-                            <Typography variant="body2" sx={styles.error}>
-                              {streetError
-                                ? "Please Enter Block/Street Number!"
-                                : ""}
-                            </Typography>
-                          </Box>
+                        <Box sx={styles.block}>
+                          <TextField
+                            value={street}
+                            error={streetError}
+                            variant="outlined"
+                            label="Block/Street Number"
+                            onChange={(e) => {
+                              setStreet(e.target.value);
+                              setStreetError(false);
+                            }}
+                          />
+                          <Typography variant="body2" sx={styles.error}>
+                            {streetError
+                              ? "Please Enter Block/Street Number!"
+                              : ""}
+                          </Typography>
+                        </Box>
 
-                          <Box sx={styles.block}>
-                            <TextField
-                              value={city}
-                              error={cityError}
-                              variant="outlined"
-                              label="City"
-                              onChange={(e) => {
-                                setCity(e.target.value);
-                                setCityError(false);
-                              }}
-                            />
-                            <Typography variant="body2" sx={styles.error}>
-                              {cityError ? "Please Enter Your City!" : ""}
-                            </Typography>
-                          </Box>
+                        <Box sx={styles.block}>
+                          <TextField
+                            value={city}
+                            error={cityError}
+                            variant="outlined"
+                            label="City"
+                            onChange={(e) => {
+                              setCity(e.target.value);
+                              setCityError(false);
+                            }}
+                          />
+                          <Typography variant="body2" sx={styles.error}>
+                            {cityError ? "Please Enter Your City!" : ""}
+                          </Typography>
+                        </Box>
 
-                          <Box sx={styles.block}>
-                            <TextField
-                              value={country}
-                              error={countryError}
-                              variant="outlined"
-                              label="Country"
-                              onChange={(e) => {
-                                setCountry(e.target.value);
-                                setCountryError(false);
-                              }}
-                            />
-                            <Typography variant="body2" sx={styles.error}>
-                              {countryError ? "Please Enter Your Country!" : ""}
-                            </Typography>
-                          </Box>
-                        </Grid>
+                        <Box sx={styles.block}>
+                          <TextField
+                            value={country}
+                            error={countryError}
+                            variant="outlined"
+                            label="Country"
+                            onChange={(e) => {
+                              setCountry(e.target.value);
+                              setCountryError(false);
+                            }}
+                          />
+                          <Typography variant="body2" sx={styles.error}>
+                            {countryError ? "Please Enter Your Country!" : ""}
+                          </Typography>
+                        </Box>
                       </>
                     )}
-
                     {activeStep === 5 && (
                       <>
                         <Typography variant="h3">
                           What is Your Phone Number?
                         </Typography>
 
-                        <Grid container item md={6} sx={styles.align}>
-                          <Box sx={styles.block}>
-                            <TextField
-                              value={phone}
-                              type="tel"
-                              error={phoneError}
-                              variant="outlined"
-                              label="Enter phone number"
-                              onChange={(e) => {
-                                const enteredPhone = e.target.value;
-                                setPhone(enteredPhone);
-                                setPhoneError(
-                                  !/^(\+92)?\d{10}$|^\d{11}$/.test(enteredPhone)
-                                );
-                              }}
-                            />
-                            <Typography variant="body2" sx={styles.error}>
-                              {phoneError ? "Invalid phone number!" : ""}
-                            </Typography>
-                          </Box>
-                        </Grid>
+                        <Box sx={styles.block}>
+                          <TextField
+                            value={phone}
+                            type="tel"
+                            error={phoneError}
+                            variant="outlined"
+                            label="Enter phone number"
+                            onChange={(e) => {
+                              setPhone(e.target.value);
+                              setPhoneError(false);
+                            }}
+                          />
+                          <Typography variant="body2" sx={styles.error}>
+                            {phoneError ? "Invalid phone number!" : ""}
+                          </Typography>
+                        </Box>
                       </>
                     )}
-
                     {activeStep === 6 && (
                       <>
                         <Typography variant="h3">
                           What is Your Email Address?
                         </Typography>
 
-                        <Grid container item md={6} sx={styles.align}>
-                          <Box sx={styles.block}>
-                            <TextField
-                              value={email}
-                              type="email"
-                              error={emailError}
-                              variant="outlined"
-                              label="Enter Email"
-                              onChange={(e) => {
-                                const enteredEmail = e.target.value;
-                                setEmail(enteredEmail);
-
-                                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                                setEmailError(!emailRegex.test(enteredEmail));
-                              }}
-                            />
-                            <Typography variant="body2" sx={styles.error}>
-                              {emailError ? "Invalid email address!" : ""}
-                            </Typography>
-                          </Box>
-                        </Grid>
-                      </>
-                    )}
-
-                    {/* {activeStep === 7 && (
-                      <Box sx={styles.block}>
-                        <Box sx={styles.lastStep}>
-                          <Typography variant="h5" sx={styles.margin}>
-                            The cost for your {getServiceName()} is '132000' PKR
-                          </Typography>
-
-                          <Typography variant="body1">
-                            Thank you for obtaining a quote from FINARCH.
-                          </Typography>
-                          <Typography variant="body1">
-                            Our manager will send your a written quote and call
-                            you to discuss shortly.
-                          </Typography>
-                          <Typography variant="body1">
-                            We have also sent the Quotation via Email to your
-                            provided email address.
+                        <Box sx={styles.block}>
+                          <TextField
+                            value={email}
+                            type="email"
+                            error={emailError}
+                            variant="outlined"
+                            label="Enter Email"
+                            onChange={(e) => {
+                              setEmail(e.target.value);
+                              setEmailError(false);
+                            }}
+                          />
+                          <Typography variant="body2" sx={styles.error}>
+                            {emailError ? "Invalid email address!" : ""}
                           </Typography>
                         </Box>
-                      </Box>
-                    )} */}
+                      </>
+                    )}
 
                     <Button
                       fullWidth
@@ -856,16 +821,8 @@ const Navbar = () => {
                         width:
                           activeStep === 1
                             ? "45%"
-                            : activeStep === 2
-                            ? "40%"
                             : activeStep === 3
                             ? "40%"
-                            : activeStep === 4
-                            ? "38%"
-                            : activeStep === 5
-                            ? "38%"
-                            : activeStep === 6
-                            ? "38%"
                             : "75%",
                       }}
                       variant="contained"
@@ -876,6 +833,62 @@ const Navbar = () => {
                   </Grid>
                 </Grid>
               </Grid>
+            </Dialog>
+
+            <Dialog
+              fullScreen
+              open={openFinal}
+              onClose={handleClickFinalClose}
+              TransitionComponent={Transition}
+            >
+              {loading ? (
+                <Box gap={4} sx={styles.loader}>
+                  <img src={loader} alt="loader" width={200} />
+                  <CircularProgress sx={styles.loaderColor} />
+                </Box>
+              ) : (
+                <Grid container sx={styles.quotePage}>
+                  <Grid item md={8} gap={6} container sx={styles.container}>
+                    <CloseIcon
+                      sx={styles.font}
+                      onClick={handleClickFinalClose}
+                    />
+
+                    <Grid container gap={3} sx={styles.lastStep}>
+                      <CheckCircleIcon sx={styles.icon} />
+
+                      <Typography variant="h5">
+                        The cost for your {quote.service_names} is{" "}
+                        {quote.quotation_amount} PKR
+                      </Typography>
+
+                      <Box>
+                        <Typography variant="body1">
+                          Thank you for obtaining a quote from FINARCH. Thank
+                          you for obtaining a quote from FINARCH.
+                        </Typography>
+                        <Typography variant="body1">
+                          Our manager will send your a written quote and call
+                          you to discuss shortly.
+                        </Typography>
+                        <Typography variant="body1">
+                          We have also sent the Quotation via Email to your
+                          provided email address.
+                        </Typography>
+                      </Box>
+
+                      <Button
+                        fullWidth
+                        variant="contained"
+                        sx={styles.download}
+                        onClick={() => window.open(quote.pdf_url, "_blank")}
+                      >
+                        Download PDF
+                      </Button>
+                    </Grid>
+                  </Grid>
+                </Grid>
+              )}
             </Dialog>
 
             <Box
