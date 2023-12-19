@@ -113,6 +113,7 @@ const Navbar = () => {
     setArea(null);
     setColor(null);
     setChecked(true);
+    setWeightage([]);
     setServiceName([]);
     setPropertySize("");
     setPropertyPrice("");
@@ -178,8 +179,8 @@ const Navbar = () => {
   //************* CHECKBOX ********** */
 
   useEffect(() => {
-    console.log("Property", propertyPrice);
-  }, [propertyPrice]);
+    console.log("checking", totalWeightage);
+  }, [totalWeightage]);
 
   const handleCheckboxChange = (event, subServiceData, serviceData) => {
     if (event.target.checked) {
@@ -212,7 +213,7 @@ const Navbar = () => {
 
       setWeightage((prevSelected) =>
         prevSelected.filter(
-          (selected) => selected !== subServiceData.weightage * serviceData.rate
+          (_, index) => selectedSubServices[index] !== subServiceData.name
         )
       );
     }
@@ -227,7 +228,8 @@ const Navbar = () => {
     );
 
     setTotalWeightage(totalWeightage);
-  }, [weightage]);
+    setPropertyPrice(area * totalWeightage);
+  }, [area, weightage]);
 
   //************* BUTTON CONDITIONS ********** */
 
@@ -277,7 +279,6 @@ const Navbar = () => {
 
         setArea(calculatedArea);
         setPropertySize(sizes[color]?.size);
-        setPropertyPrice(calculatedArea * totalWeightage);
 
         setLengthError(false);
         setWidthError(false);
