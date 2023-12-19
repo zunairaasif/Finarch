@@ -29,7 +29,7 @@ import styles from "./styles";
 import { pages } from "./data";
 import DrawerComp from "./drawer";
 import logo from "../../assets/images/logo.svg";
-import loader from "../../assets/images/loading-logo.svg";
+import loaderLogo from "../../assets/images/loading-logo.svg";
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -55,6 +55,7 @@ const Navbar = () => {
   const [step2, setStep2] = useState(false);
   const [step3, setStep3] = useState(false);
   const [country, setCountry] = useState("");
+  const [loader, setLoader] = useState(false);
   const [checked, setChecked] = useState(true);
   const [services, setServices] = useState([]);
   const [open, setOpen] = React.useState(false);
@@ -68,6 +69,7 @@ const Navbar = () => {
   const [plotError, setPlotError] = useState(false);
   const [cityError, setCityError] = useState(false);
   const [openFinal, setOpenFinal] = useState(false);
+  const [serviceName, setServiceName] = useState([]);
   const [phoneError, setPhoneError] = useState(false);
   const [emailError, setEmailError] = useState(false);
   const [widthError, setWidthError] = useState(false);
@@ -111,8 +113,12 @@ const Navbar = () => {
     setArea(null);
     setColor(null);
     setChecked(true);
+    setServiceName([]);
+    setPropertySize("");
+    setPropertyPrice("");
     setHoveredIndex(null);
     setPropertyColor(null);
+    setTotalWeightage(null);
     setSelectedSubServices([]);
   };
 
@@ -157,27 +163,34 @@ const Navbar = () => {
   //************* GET SERVICES ********** */
 
   useEffect(() => {
-    setLoading(true);
     axios
       .get(`${baseUrl}/service/getAllServices`)
       .then((response) => {
         const service = response.data.data;
         setServices(service);
-        setLoading(false);
+        console.log(service);
       })
       .catch((error) => {
         console.error("Error:", error);
-        setLoading(false);
       });
   }, [baseUrl]);
 
   //************* CHECKBOX ********** */
+
+  useEffect(() => {
+    console.log("Property", propertyPrice);
+  }, [propertyPrice]);
 
   const handleCheckboxChange = (event, subServiceData, serviceData) => {
     if (event.target.checked) {
       setSelectedSubServices((prevSelected) => [
         ...prevSelected,
         subServiceData.name,
+      ]);
+
+      setServiceName((prevSelected) => [
+        ...prevSelected,
+        { [subServiceData.service_name]: subServiceData.name },
       ]);
 
       setWeightage((prevSelected) => [
@@ -187,6 +200,14 @@ const Navbar = () => {
     } else {
       setSelectedSubServices((prevSelected) =>
         prevSelected.filter((selected) => selected !== subServiceData.name)
+      );
+
+      setServiceName((prevSelected) =>
+        prevSelected.filter(
+          (selected) =>
+            Object.keys(selected)[0] !== subServiceData.service_name ||
+            selected[subServiceData.service_name] !== subServiceData.name
+        )
       );
 
       setWeightage((prevSelected) =>
@@ -255,6 +276,9 @@ const Navbar = () => {
         }
 
         setArea(calculatedArea);
+        setPropertySize(sizes[color]?.size);
+        setPropertyPrice(calculatedArea * totalWeightage);
+
         setLengthError(false);
         setWidthError(false);
 
@@ -284,7 +308,7 @@ const Navbar = () => {
         break;
 
       case 5:
-        if (phone.trim() === "" || !/^(\+92)?\d{10}$|^\d{11}$/.test(phone)) {
+        if (phone.trim() === "" || !/^(\+92)?\d{11}$|^\d{11}$/.test(phone)) {
           setPhoneError(true);
         } else {
           setPhone(phone);
@@ -319,6 +343,22 @@ const Navbar = () => {
   //************* POST QUOTATION ********** */
 
   const finish = async () => {
+    setLoader(true);
+
+    console.log("name", name);
+    console.log("email", email);
+    console.log("contact", phone);
+    console.log("country", country);
+    console.log("city", city);
+    console.log("block", street);
+    console.log("house_plot", plot);
+    console.log("propertySizeInSqft", area);
+    console.log("property_size", propertySize);
+    console.log("property_type", type);
+    console.log("service_names", selectedSubServices);
+    console.log("total_property_price", propertyPrice);
+    console.log("total_rate", totalWeightage);
+
     const postData = {
       name: name,
       email: email,
@@ -331,34 +371,41 @@ const Navbar = () => {
       property_size: propertySize,
       property_type: type,
       service_names: selectedSubServices,
+      // service_names: serviceName,
       total_property_price: propertyPrice,
-      total_rate: weightage,
+      total_rate: totalWeightage,
     };
 
-    // try {
-    //   await axios.post(`${baseUrl}/quotes/postQuotation`, postData);
-    //   console.log("Data posted");
-    //   handleClickClose();
+    try {
+      await axios.post(`${baseUrl}/quotes/postQuotation`, postData);
+      console.log("Data posted");
+      handleClickClose();
+      setLoader(false);
 
-    //   handleClickFinalOpen();
-    //   axios
-    //     .get(`${baseUrl}/quotes/getQuotes`)
-    //     .then((response) => {
-    //       const quote = response.data.data;
-    //       if (quote.length > 0) {
-    //         const lastQuote = quote[quote.length - 1];
-    //         setQuote(lastQuote);
-    //         console.log(lastQuote);
-    //       } else {
-    //         console.log("No quotes available.");
-    //       }
-    //     })
-    //     .catch((error) => {
-    //       console.error("Get quotation Error:", error);
-    //     });
-    // } catch (error) {
-    //   console.error("Post quotation Error:", error);
-    // }
+      handleClickFinalOpen();
+      setLoading(true);
+      axios
+        .get(`${baseUrl}/quotes/getQuotes`)
+        .then((response) => {
+          const quote = response.data.data;
+          if (quote.length > 0) {
+            const lastQuote = quote[quote.length - 1];
+            setQuote(lastQuote);
+            setLoading(false);
+            console.log(lastQuote);
+          } else {
+            console.log("No quotes available.");
+            setLoading(false);
+          }
+        })
+        .catch((error) => {
+          console.error("Get quotation Error:", error);
+          setLoading(false);
+        });
+    } catch (error) {
+      console.error("Post quotation Error:", error);
+      setLoader(false);
+    }
   };
 
   //************ MENU *********** */
@@ -421,425 +468,453 @@ const Navbar = () => {
                 </Alert>
               </Snackbar>
 
-              <Grid container sx={styles.quotePage}>
-                <Grid
-                  item
-                  gap={5}
-                  container
-                  sx={
-                    activeStep === 1 || activeStep === 2
-                      ? styles.containerView
-                      : styles.container
-                  }
-                  md={activeStep === 1 || activeStep === 3 ? 10 : 6}
-                >
-                  {activeStep === 0 ? (
-                    <CloseIcon sx={styles.font} onClick={handleClickClose} />
-                  ) : (
-                    <Grid container sx={styles.justify}>
-                      <KeyboardBackspaceIcon
-                        sx={styles.font}
-                        onClick={handleBackClick}
-                      />
-                      <CloseIcon sx={styles.font} onClick={handleClickClose} />
-                    </Grid>
-                  )}
-
+              {loader ? (
+                <Box gap={4} sx={styles.loader}>
+                  <img src={loaderLogo} alt="loader" width={200} />
+                  <CircularProgress sx={styles.loaderColor} />
+                </Box>
+              ) : (
+                <Grid container sx={styles.quotePage}>
                   <Grid
+                    item
+                    gap={5}
                     container
-                    sx={styles.info}
-                    gap={
-                      (activeStep === 3 && color === 4) || activeStep === 4
-                        ? 3
-                        : 5
+                    sx={
+                      activeStep === 1 || activeStep === 2
+                        ? styles.containerView
+                        : styles.container
                     }
+                    md={activeStep === 1 || activeStep === 3 ? 10 : 6}
                   >
-                    <Box gap={1} sx={styles.wrap}>
-                      {
-                        steps.map((step, index) => (
-                          <Box
-                            key={index}
-                            sx={
-                              index === activeStep
-                                ? styles.stepperCompleted
-                                : index < activeStep
-                                ? styles.stepperCompleted
-                                : styles.stepperCurrent
-                            }
-                          ></Box>
-                        ))
-                        // )
+                    {activeStep === 0 ? (
+                      <CloseIcon sx={styles.font} onClick={handleClickClose} />
+                    ) : (
+                      <Grid container sx={styles.justify}>
+                        <KeyboardBackspaceIcon
+                          sx={styles.font}
+                          onClick={handleBackClick}
+                        />
+                        <CloseIcon
+                          sx={styles.font}
+                          onClick={handleClickClose}
+                        />
+                      </Grid>
+                    )}
+
+                    <Grid
+                      container
+                      sx={styles.info}
+                      gap={
+                        (activeStep === 3 && color === 4) || activeStep === 4
+                          ? 3
+                          : 5
                       }
-                    </Box>
-                    {activeStep === 0 && (
-                      <>
-                        <Typography variant="h2">What is Your Name?</Typography>
-
-                        <Box sx={styles.block}>
-                          <TextField
-                            value={name}
-                            error={showError}
-                            variant="outlined"
-                            label="Enter your name"
-                            onChange={(e) => {
-                              setName(e.target.value);
-                              setShowError(false);
-                            }}
-                          />
-                          <Typography variant="body2" sx={styles.error}>
-                            {showError ? "Please enter name to continue!" : ""}
-                          </Typography>
-                        </Box>
-                      </>
-                    )}
-                    {activeStep === 1 && (
-                      <>
-                        <Typography variant="h3">
-                          Services you are Interested In?
-                        </Typography>
-
-                        <Grid gap={2} container sx={styles.grid}>
-                          {services?.map((serviceData, serviceIndex) => (
-                            <Box
-                              key={serviceIndex}
-                              onClick={() => setHoveredIndex(serviceIndex)}
-                              sx={{
-                                ...styles.serviceBox,
-                                transform:
-                                  hoveredIndex === serviceIndex
-                                    ? "rotateY(180deg)"
-                                    : "rotateY(0deg)",
-                              }}
-                            >
-                              <Box sx={styles.front}>
-                                <Typography sx={styles.name}>
-                                  {serviceData.service_name}
-                                </Typography>
-                              </Box>
-
-                              <Box sx={styles.back}>
-                                <Typography sx={styles.service}>
-                                  {serviceData.service_name}
-                                </Typography>
-
-                                <Grid container sx={styles.backContent}>
-                                  {serviceData.subServices.map(
-                                    (subServiceData, subServiceIndex) => (
-                                      <Box
-                                        key={subServiceIndex}
-                                        sx={styles.flex}
-                                      >
-                                        <Checkbox
-                                          size="xsmall"
-                                          checked={selectedSubServices.includes(
-                                            subServiceData.name
-                                          )}
-                                          sx={{
-                                            ...styles.checkbox,
-                                            "&.Mui-checked": {
-                                              color: "black",
-                                            },
-                                          }}
-                                          onChange={(event) =>
-                                            handleCheckboxChange(
-                                              event,
-                                              subServiceData,
-                                              serviceData
-                                            )
-                                          }
-                                        />
-                                        <Typography
-                                          variant="caption"
-                                          key={subServiceIndex}
-                                        >
-                                          {subServiceData.name}
-                                        </Typography>
-                                      </Box>
-                                    )
-                                  )}
-                                </Grid>
-                              </Box>
-                            </Box>
-                          ))}
-                        </Grid>
-                      </>
-                    )}
-                    {activeStep === 2 && (
-                      <>
-                        <Typography variant="h4">
-                          What is Your Property Type?
-                        </Typography>
-
-                        <Grid gap={2} container sx={styles.display}>
-                          {propertyType.map((data, index) => (
-                            <Box
-                              key={index}
-                              sx={{
-                                ...styles.propertyBox,
-                                backgroundColor:
-                                  propertyColor === index
-                                    ? "#f0eef0"
-                                    : "transparent",
-                                cursor: "pointer",
-                              }}
-                              onClick={() => {
-                                setPropertyColor(index);
-                                setType(data);
-                              }}
-                            >
-                              <Box sx={styles.property}>
-                                <Typography variant="body1">{data}</Typography>
-                              </Box>
-                            </Box>
-                          ))}
-                        </Grid>
-                      </>
-                    )}
-                    {activeStep === 3 && (
-                      <>
-                        <Typography variant="h4">
-                          What is Your Property Size?
-                        </Typography>
-
-                        <Grid gap={2} container sx={styles.display}>
-                          {sizes.map((data, index) => (
-                            <Box
-                              key={index}
-                              sx={{
-                                ...styles.propertyBox,
-                                backgroundColor:
-                                  color === index ? "#f0eef0" : "transparent",
-                                cursor: "pointer",
-                              }}
-                              onClick={() => {
-                                setColor(index);
-                              }}
-                            >
-                              <Box sx={styles.property}>
-                                <Typography variant="body1">
-                                  {data.size}
-                                </Typography>
-
-                                {data.size === "Custom Size" ? null : (
-                                  <Typography variant="body2">
-                                    {`(${data.area}) Square Feet`}
-                                  </Typography>
-                                )}
-                              </Box>
-                            </Box>
-                          ))}
-                        </Grid>
-
-                        {color === 4 && (
-                          <Grid gap={2} container sx={styles.info}>
-                            <Box sx={styles.grid}>
-                              <Checkbox
-                                size="xsmall"
-                                checked={checked}
-                                onChange={(event) => {
-                                  setChecked(event.target.checked);
-                                }}
-                                sx={{
-                                  ...styles.checkbox,
-                                  "&.Mui-checked": {
-                                    color: "black",
-                                  },
-                                }}
-                              />
-                              <Typography variant="body2">
-                                Don't know the dimensions? Uncheck this to type
-                                area
-                              </Typography>
-                            </Box>
-
-                            {!checked && (
-                              <Grid
-                                item
-                                md={6}
-                                gap={2}
-                                container
-                                sx={styles.align}
-                              >
-                                <Box sx={styles.block}>
-                                  <TextField
-                                    size="small"
-                                    type="number"
-                                    value={length}
-                                    error={lengthError}
-                                    variant="outlined"
-                                    label="Enter Length"
-                                    onChange={(e) => {
-                                      setLength(e.target.value);
-                                      setLengthError(false);
-                                    }}
-                                  />
-                                  <Typography variant="body2" sx={styles.error}>
-                                    {lengthError ? "Please Enter Length!" : ""}
-                                  </Typography>
-                                </Box>
-
-                                <Box sx={styles.block}>
-                                  <TextField
-                                    size="small"
-                                    type="number"
-                                    value={width}
-                                    error={widthError}
-                                    variant="outlined"
-                                    label="Enter Width"
-                                    onChange={(e) => {
-                                      setWidth(e.target.value);
-                                      setWidthError(false);
-                                    }}
-                                  />
-                                  <Typography variant="body2" sx={styles.error}>
-                                    {widthError ? "Please Enter Width!" : ""}
-                                  </Typography>
-                                </Box>
-                              </Grid>
-                            )}
-                          </Grid>
-                        )}
-                      </>
-                    )}
-                    {activeStep === 4 && (
-                      <>
-                        <Typography variant="h3">Enter The Address!</Typography>
-
-                        <Box sx={styles.block}>
-                          <TextField
-                            value={plot}
-                            error={plotError}
-                            variant="outlined"
-                            label="House/Plot Number"
-                            onChange={(e) => {
-                              setPlot(e.target.value);
-                              setPlotError(false);
-                            }}
-                          />
-                          <Typography variant="body2" sx={styles.error}>
-                            {plotError ? "Please Enter House/Plot Number!" : ""}
-                          </Typography>
-                        </Box>
-
-                        <Box sx={styles.block}>
-                          <TextField
-                            value={street}
-                            error={streetError}
-                            variant="outlined"
-                            label="Block/Street Number"
-                            onChange={(e) => {
-                              setStreet(e.target.value);
-                              setStreetError(false);
-                            }}
-                          />
-                          <Typography variant="body2" sx={styles.error}>
-                            {streetError
-                              ? "Please Enter Block/Street Number!"
-                              : ""}
-                          </Typography>
-                        </Box>
-
-                        <Box sx={styles.block}>
-                          <TextField
-                            value={city}
-                            error={cityError}
-                            variant="outlined"
-                            label="City"
-                            onChange={(e) => {
-                              setCity(e.target.value);
-                              setCityError(false);
-                            }}
-                          />
-                          <Typography variant="body2" sx={styles.error}>
-                            {cityError ? "Please Enter Your City!" : ""}
-                          </Typography>
-                        </Box>
-
-                        <Box sx={styles.block}>
-                          <TextField
-                            value={country}
-                            error={countryError}
-                            variant="outlined"
-                            label="Country"
-                            onChange={(e) => {
-                              setCountry(e.target.value);
-                              setCountryError(false);
-                            }}
-                          />
-                          <Typography variant="body2" sx={styles.error}>
-                            {countryError ? "Please Enter Your Country!" : ""}
-                          </Typography>
-                        </Box>
-                      </>
-                    )}
-                    {activeStep === 5 && (
-                      <>
-                        <Typography variant="h3">
-                          What is Your Phone Number?
-                        </Typography>
-
-                        <Box sx={styles.block}>
-                          <TextField
-                            value={phone}
-                            type="tel"
-                            error={phoneError}
-                            variant="outlined"
-                            label="Enter phone number"
-                            onChange={(e) => {
-                              setPhone(e.target.value);
-                              setPhoneError(false);
-                            }}
-                          />
-                          <Typography variant="body2" sx={styles.error}>
-                            {phoneError ? "Invalid phone number!" : ""}
-                          </Typography>
-                        </Box>
-                      </>
-                    )}
-                    {activeStep === 6 && (
-                      <>
-                        <Typography variant="h3">
-                          What is Your Email Address?
-                        </Typography>
-
-                        <Box sx={styles.block}>
-                          <TextField
-                            value={email}
-                            type="email"
-                            error={emailError}
-                            variant="outlined"
-                            label="Enter Email"
-                            onChange={(e) => {
-                              setEmail(e.target.value);
-                              setEmailError(false);
-                            }}
-                          />
-                          <Typography variant="body2" sx={styles.error}>
-                            {emailError ? "Invalid email address!" : ""}
-                          </Typography>
-                        </Box>
-                      </>
-                    )}
-
-                    <Button
-                      fullWidth
-                      sx={{
-                        ...styles.btn,
-                        width:
-                          activeStep === 1
-                            ? "45%"
-                            : activeStep === 3
-                            ? "40%"
-                            : "75%",
-                      }}
-                      variant="contained"
-                      onClick={handleNextClick}
                     >
-                      {activeStep === steps.length - 1 ? "Finish" : "Next"}
-                    </Button>
+                      <Box gap={1} sx={styles.wrap}>
+                        {
+                          steps.map((step, index) => (
+                            <Box
+                              key={index}
+                              sx={
+                                index === activeStep
+                                  ? styles.stepperCompleted
+                                  : index < activeStep
+                                  ? styles.stepperCompleted
+                                  : styles.stepperCurrent
+                              }
+                            ></Box>
+                          ))
+                          // )
+                        }
+                      </Box>
+                      {activeStep === 0 && (
+                        <>
+                          <Typography variant="h2">
+                            What is Your Name?
+                          </Typography>
+
+                          <Box sx={styles.block}>
+                            <TextField
+                              value={name}
+                              error={showError}
+                              variant="outlined"
+                              label="Enter your name"
+                              onChange={(e) => {
+                                setName(e.target.value);
+                                setShowError(false);
+                              }}
+                            />
+                            <Typography variant="body2" sx={styles.error}>
+                              {showError
+                                ? "Please enter name to continue!"
+                                : ""}
+                            </Typography>
+                          </Box>
+                        </>
+                      )}
+                      {activeStep === 1 && (
+                        <>
+                          <Typography variant="h3">
+                            Services you are Interested In?
+                          </Typography>
+
+                          <Grid gap={2} container sx={styles.grid}>
+                            {services?.map((serviceData, serviceIndex) => (
+                              <Box
+                                key={serviceIndex}
+                                onClick={() => setHoveredIndex(serviceIndex)}
+                                sx={{
+                                  ...styles.serviceBox,
+                                  transform:
+                                    hoveredIndex === serviceIndex
+                                      ? "rotateY(180deg)"
+                                      : "rotateY(0deg)",
+                                }}
+                              >
+                                <Box sx={styles.front}>
+                                  <Typography sx={styles.name}>
+                                    {serviceData.service_name}
+                                  </Typography>
+                                </Box>
+
+                                <Box sx={styles.back}>
+                                  <Typography sx={styles.service}>
+                                    {serviceData.service_name}
+                                  </Typography>
+
+                                  <Grid container sx={styles.backContent}>
+                                    {serviceData.subServices.map(
+                                      (subServiceData, subServiceIndex) => (
+                                        <Box
+                                          key={subServiceIndex}
+                                          sx={styles.flex}
+                                        >
+                                          <Checkbox
+                                            size="xsmall"
+                                            checked={selectedSubServices.includes(
+                                              subServiceData.name
+                                            )}
+                                            sx={{
+                                              ...styles.checkbox,
+                                              "&.Mui-checked": {
+                                                color: "black",
+                                              },
+                                            }}
+                                            onChange={(event) =>
+                                              handleCheckboxChange(
+                                                event,
+                                                subServiceData,
+                                                serviceData
+                                              )
+                                            }
+                                          />
+                                          <Typography
+                                            variant="caption"
+                                            key={subServiceIndex}
+                                          >
+                                            {subServiceData.name}
+                                          </Typography>
+                                        </Box>
+                                      )
+                                    )}
+                                  </Grid>
+                                </Box>
+                              </Box>
+                            ))}
+                          </Grid>
+                        </>
+                      )}
+                      {activeStep === 2 && (
+                        <>
+                          <Typography variant="h4">
+                            What is Your Property Type?
+                          </Typography>
+
+                          <Grid gap={2} container sx={styles.display}>
+                            {propertyType.map((data, index) => (
+                              <Box
+                                key={index}
+                                sx={{
+                                  ...styles.propertyBox,
+                                  backgroundColor:
+                                    propertyColor === index
+                                      ? "#f0eef0"
+                                      : "transparent",
+                                  cursor: "pointer",
+                                }}
+                                onClick={() => {
+                                  setPropertyColor(index);
+                                  setType(data);
+                                }}
+                              >
+                                <Box sx={styles.property}>
+                                  <Typography variant="body1">
+                                    {data}
+                                  </Typography>
+                                </Box>
+                              </Box>
+                            ))}
+                          </Grid>
+                        </>
+                      )}
+                      {activeStep === 3 && (
+                        <>
+                          <Typography variant="h4">
+                            What is Your Property Size?
+                          </Typography>
+
+                          <Grid gap={2} container sx={styles.display}>
+                            {sizes.map((data, index) => (
+                              <Box
+                                key={index}
+                                sx={{
+                                  ...styles.propertyBox,
+                                  backgroundColor:
+                                    color === index ? "#f0eef0" : "transparent",
+                                  cursor: "pointer",
+                                }}
+                                onClick={() => {
+                                  setColor(index);
+                                }}
+                              >
+                                <Box sx={styles.property}>
+                                  <Typography variant="body1">
+                                    {data.size}
+                                  </Typography>
+
+                                  {data.size === "Custom Size" ? null : (
+                                    <Typography variant="body2">
+                                      {`(${data.area}) Square Feet`}
+                                    </Typography>
+                                  )}
+                                </Box>
+                              </Box>
+                            ))}
+                          </Grid>
+
+                          {color === 4 && (
+                            <Grid gap={2} container sx={styles.info}>
+                              <Box sx={styles.grid}>
+                                <Checkbox
+                                  size="xsmall"
+                                  checked={checked}
+                                  onChange={(event) => {
+                                    setChecked(event.target.checked);
+                                  }}
+                                  sx={{
+                                    ...styles.checkbox,
+                                    "&.Mui-checked": {
+                                      color: "black",
+                                    },
+                                  }}
+                                />
+                                <Typography variant="body2">
+                                  Don't know the dimensions? Uncheck this to
+                                  type area
+                                </Typography>
+                              </Box>
+
+                              {!checked && (
+                                <Grid
+                                  item
+                                  md={6}
+                                  gap={2}
+                                  container
+                                  sx={styles.align}
+                                >
+                                  <Box sx={styles.block}>
+                                    <TextField
+                                      size="small"
+                                      type="number"
+                                      value={length}
+                                      error={lengthError}
+                                      variant="outlined"
+                                      label="Enter Length"
+                                      onChange={(e) => {
+                                        setLength(e.target.value);
+                                        setLengthError(false);
+                                      }}
+                                    />
+                                    <Typography
+                                      variant="body2"
+                                      sx={styles.error}
+                                    >
+                                      {lengthError
+                                        ? "Please Enter Length!"
+                                        : ""}
+                                    </Typography>
+                                  </Box>
+
+                                  <Box sx={styles.block}>
+                                    <TextField
+                                      size="small"
+                                      type="number"
+                                      value={width}
+                                      error={widthError}
+                                      variant="outlined"
+                                      label="Enter Width"
+                                      onChange={(e) => {
+                                        setWidth(e.target.value);
+                                        setWidthError(false);
+                                      }}
+                                    />
+                                    <Typography
+                                      variant="body2"
+                                      sx={styles.error}
+                                    >
+                                      {widthError ? "Please Enter Width!" : ""}
+                                    </Typography>
+                                  </Box>
+                                </Grid>
+                              )}
+                            </Grid>
+                          )}
+                        </>
+                      )}
+                      {activeStep === 4 && (
+                        <>
+                          <Typography variant="h3">
+                            Enter The Address!
+                          </Typography>
+
+                          <Box sx={styles.block}>
+                            <TextField
+                              value={plot}
+                              error={plotError}
+                              variant="outlined"
+                              label="House/Plot Number"
+                              onChange={(e) => {
+                                setPlot(e.target.value);
+                                setPlotError(false);
+                              }}
+                            />
+                            <Typography variant="body2" sx={styles.error}>
+                              {plotError
+                                ? "Please Enter House/Plot Number!"
+                                : ""}
+                            </Typography>
+                          </Box>
+
+                          <Box sx={styles.block}>
+                            <TextField
+                              value={street}
+                              error={streetError}
+                              variant="outlined"
+                              label="Block/Street Number"
+                              onChange={(e) => {
+                                setStreet(e.target.value);
+                                setStreetError(false);
+                              }}
+                            />
+                            <Typography variant="body2" sx={styles.error}>
+                              {streetError
+                                ? "Please Enter Block/Street Number!"
+                                : ""}
+                            </Typography>
+                          </Box>
+
+                          <Box sx={styles.block}>
+                            <TextField
+                              value={city}
+                              error={cityError}
+                              variant="outlined"
+                              label="City"
+                              onChange={(e) => {
+                                setCity(e.target.value);
+                                setCityError(false);
+                              }}
+                            />
+                            <Typography variant="body2" sx={styles.error}>
+                              {cityError ? "Please Enter Your City!" : ""}
+                            </Typography>
+                          </Box>
+
+                          <Box sx={styles.block}>
+                            <TextField
+                              value={country}
+                              error={countryError}
+                              variant="outlined"
+                              label="Country"
+                              onChange={(e) => {
+                                setCountry(e.target.value);
+                                setCountryError(false);
+                              }}
+                            />
+                            <Typography variant="body2" sx={styles.error}>
+                              {countryError ? "Please Enter Your Country!" : ""}
+                            </Typography>
+                          </Box>
+                        </>
+                      )}
+                      {activeStep === 5 && (
+                        <>
+                          <Typography variant="h3">
+                            What is Your Phone Number?
+                          </Typography>
+
+                          <Box sx={styles.block}>
+                            <TextField
+                              value={phone}
+                              type="tel"
+                              error={phoneError}
+                              variant="outlined"
+                              label="Enter phone number"
+                              onChange={(e) => {
+                                setPhone(e.target.value);
+                                setPhoneError(false);
+                              }}
+                            />
+                            <Typography variant="body2" sx={styles.error}>
+                              {phoneError ? "Invalid phone number!" : ""}
+                            </Typography>
+                          </Box>
+                        </>
+                      )}
+                      {activeStep === 6 && (
+                        <>
+                          <Typography variant="h3">
+                            What is Your Email Address?
+                          </Typography>
+
+                          <Box sx={styles.block}>
+                            <TextField
+                              value={email}
+                              type="email"
+                              error={emailError}
+                              variant="outlined"
+                              label="Enter Email"
+                              onChange={(e) => {
+                                setEmail(e.target.value);
+                                setEmailError(false);
+                              }}
+                            />
+                            <Typography variant="body2" sx={styles.error}>
+                              {emailError ? "Invalid email address!" : ""}
+                            </Typography>
+                          </Box>
+                        </>
+                      )}
+
+                      <Button
+                        fullWidth
+                        sx={{
+                          ...styles.btn,
+                          width:
+                            activeStep === 1
+                              ? "45%"
+                              : activeStep === 3
+                              ? "40%"
+                              : "75%",
+                        }}
+                        variant="contained"
+                        onClick={handleNextClick}
+                      >
+                        {activeStep === steps.length - 1 ? "Finish" : "Next"}
+                      </Button>
+                    </Grid>
                   </Grid>
                 </Grid>
-              </Grid>
+              )}
             </Dialog>
 
             <Dialog
@@ -850,7 +925,7 @@ const Navbar = () => {
             >
               {loading ? (
                 <Box gap={4} sx={styles.loader}>
-                  <img src={loader} alt="loader" width={200} />
+                  <img src={loaderLogo} alt="loader" width={200} />
                   <CircularProgress sx={styles.loaderColor} />
                 </Box>
               ) : (
