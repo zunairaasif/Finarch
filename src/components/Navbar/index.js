@@ -175,7 +175,7 @@ const Navbar = () => {
       });
   }, [baseUrl]);
 
-  //************* Service Flip ********** */
+  //************* CHECKBOX ********** */
 
   const handleServiceBoxClick = (serviceIndex, event) => {
     console.log(serviceIndex);
@@ -204,22 +204,12 @@ const Navbar = () => {
 
   //************* CHECKBOX ********** */
 
-  const handleCheckboxChange = (
-    event,
-    subServiceData,
-    serviceData,
-    serviceIndex
-  ) => {
+  const handleCheckboxChange = (event, subServiceData, serviceData) => {
     if (event.target.checked) {
-      setSelectedSubServices((prevSelected) => {
-        const selectedSubServicesCopy = { ...prevSelected };
-
-        if (!selectedSubServicesCopy[serviceIndex]) {
-          selectedSubServicesCopy[serviceIndex] = [];
-        }
-        selectedSubServicesCopy[serviceIndex].push(subServiceData.name);
-        return selectedSubServicesCopy;
-      });
+      setSelectedSubServices((prevSelected) => [
+        ...prevSelected,
+        subServiceData.name,
+      ]);
 
       setServiceName((prevSelected) => [
         ...prevSelected,
@@ -231,15 +221,9 @@ const Navbar = () => {
         subServiceData.weightage * serviceData.rate,
       ]);
     } else {
-      setSelectedSubServices((prevSelected) => {
-        const selectedSubServicesCopy = { ...prevSelected };
-
-        selectedSubServicesCopy[serviceIndex] = selectedSubServicesCopy[
-          serviceIndex
-        ].filter((selected) => selected !== subServiceData.name);
-
-        return selectedSubServicesCopy;
-      });
+      setSelectedSubServices((prevSelected) =>
+        prevSelected.filter((selected) => selected !== subServiceData.name)
+      );
 
       setServiceName((prevSelected) =>
         prevSelected.filter(
@@ -622,9 +606,9 @@ const Navbar = () => {
                                         >
                                           <Checkbox
                                             size="xsmall"
-                                            checked={selectedSubServices[
-                                              serviceIndex
-                                            ]?.includes(subServiceData.name)}
+                                            checked={selectedSubServices.includes(
+                                              subServiceData.name
+                                            )}
                                             sx={{
                                               ...styles.checkbox,
                                               "&.Mui-checked": {
