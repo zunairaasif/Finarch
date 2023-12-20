@@ -16,12 +16,16 @@ import Navbar from "../../components/Navbar";
 
 const Projects = () => {
   const theme = useTheme();
+  const containerRef = useRef(null);
   const [images, setImages] = useState([]);
+  const [startX, setStartX] = useState(null);
   const [project, setProject] = useState([]);
   const [animate, setAnimate] = useState("");
   const [value, setValue] = React.useState(0);
   const [isLoading, setLoading] = useState(true);
   const baseUrl = process.env.REACT_APP_BASE_URL;
+  const [scrollLeft, setScrollLeft] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
   const isMatch = useMediaQuery(theme.breakpoints.down("sm"));
 
   useEffect(() => {
@@ -65,11 +69,6 @@ const Projects = () => {
     value === 0
       ? project
       : project.filter((data) => data.type === getTabType(value));
-
-  const containerRef = useRef(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [startX, setStartX] = useState(null);
-  const [scrollLeft, setScrollLeft] = useState(0);
 
   const handleMouseDown = (e) => {
     setIsDragging(true);
