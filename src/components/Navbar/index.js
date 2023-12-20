@@ -198,21 +198,17 @@ const Navbar = () => {
 
   const handleCheckboxChange = (
     event,
-    subServiceData,
     serviceData,
-    serviceIndex
+    serviceIndex,
+    subServiceData
   ) => {
     if (event.target.checked) {
       setSelectedSubServices((prevSelected) => {
         const selectedSubServicesCopy = { ...prevSelected };
-
         if (!selectedSubServicesCopy[serviceIndex]) {
-          // Initialize the array if it doesn't exist
           selectedSubServicesCopy[serviceIndex] = [];
         }
-
         selectedSubServicesCopy[serviceIndex].push(subServiceData.name);
-
         return selectedSubServicesCopy;
       });
 
@@ -629,8 +625,9 @@ const Navbar = () => {
                                             onChange={(event) =>
                                               handleCheckboxChange(
                                                 event,
-                                                subServiceData,
-                                                serviceData
+                                                serviceData,
+                                                serviceIndex,
+                                                subServiceData
                                               )
                                             }
                                           />
