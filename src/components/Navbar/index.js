@@ -178,33 +178,42 @@ const Navbar = () => {
   //************* Service Flip ********** */
 
   const handleServiceBoxClick = (serviceIndex, event) => {
+    console.log(serviceIndex);
     const isCheckbox =
       event.target.tagName === "INPUT" && event.target.type === "checkbox";
 
-    if (!isCheckbox) {
-      setFlippedServices((prevFlipped) => {
-        const newFlipped = [...prevFlipped];
-        if (newFlipped.includes(serviceIndex)) {
-          newFlipped.splice(newFlipped.indexOf(serviceIndex), 1);
-        } else {
+    setFlippedServices((prevFlipped) => {
+      const newFlipped = [...prevFlipped];
+
+      if (!isCheckbox) {
+        // Toggle the state of the clicked service index
+        const indexExists = newFlipped.indexOf(serviceIndex);
+        if (indexExists !== -1) {
+          newFlipped.splice(indexExists, 1);
+        } else if (
+          (serviceIndex === 2 && newFlipped.length === 0) ||
+          (serviceIndex !== 2 && !newFlipped.includes(2))
+        ) {
           newFlipped.push(serviceIndex);
         }
-        return newFlipped;
-      });
-    }
+      }
+
+      return newFlipped;
+    });
   };
 
   //************* CHECKBOX ********** */
 
   const handleCheckboxChange = (
     event,
+    subServiceData,
     serviceData,
-    serviceIndex,
-    subServiceData
+    serviceIndex
   ) => {
     if (event.target.checked) {
       setSelectedSubServices((prevSelected) => {
         const selectedSubServicesCopy = { ...prevSelected };
+
         if (!selectedSubServicesCopy[serviceIndex]) {
           selectedSubServicesCopy[serviceIndex] = [];
         }
@@ -625,9 +634,8 @@ const Navbar = () => {
                                             onChange={(event) =>
                                               handleCheckboxChange(
                                                 event,
-                                                serviceData,
-                                                serviceIndex,
-                                                subServiceData
+                                                subServiceData,
+                                                serviceData
                                               )
                                             }
                                           />
