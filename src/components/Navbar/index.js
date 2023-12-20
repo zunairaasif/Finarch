@@ -76,11 +76,11 @@ const Navbar = () => {
   const [propertySize, setPropertySize] = useState("");
   const [lengthError, setLengthError] = useState(false);
   const [streetError, setStreetError] = useState(false);
-  const [hoveredIndex, setHoveredIndex] = useState(null);
   const [countryError, setCountryError] = useState(false);
   const [propertyColor, setPropertyColor] = useState(null);
   const [propertyPrice, setPropertyPrice] = useState(null);
   const [totalWeightage, setTotalWeightage] = useState(null);
+  const [flippedServices, setFlippedServices] = useState([]);
   const isMatch = useMediaQuery(theme.breakpoints.down("sm"));
   const [isMenuIconRotated, setMenuIconRotation] = useState(false);
   const [selectedSubServices, setSelectedSubServices] = useState([]);
@@ -117,7 +117,7 @@ const Navbar = () => {
     setServiceName([]);
     setPropertySize("");
     setPropertyPrice("");
-    setHoveredIndex(null);
+    setFlippedServices([]);
     setPropertyColor(null);
     setTotalWeightage(null);
     setSelectedSubServices([]);
@@ -169,25 +169,52 @@ const Navbar = () => {
       .then((response) => {
         const service = response.data.data;
         setServices(service);
-        console.log(service);
       })
       .catch((error) => {
         console.error("Error:", error);
       });
   }, [baseUrl]);
 
+  //************* Service Flip ********** */
+
+  const handleServiceBoxClick = (serviceIndex, event) => {
+    const isCheckbox =
+      event.target.tagName === "INPUT" && event.target.type === "checkbox";
+
+    if (!isCheckbox) {
+      setFlippedServices((prevFlipped) => {
+        const newFlipped = [...prevFlipped];
+        if (newFlipped.includes(serviceIndex)) {
+          newFlipped.splice(newFlipped.indexOf(serviceIndex), 1);
+        } else {
+          newFlipped.push(serviceIndex);
+        }
+        return newFlipped;
+      });
+    }
+  };
+
   //************* CHECKBOX ********** */
 
-  useEffect(() => {
-    console.log("checking", totalWeightage);
-  }, [totalWeightage]);
-
-  const handleCheckboxChange = (event, subServiceData, serviceData) => {
+  const handleCheckboxChange = (
+    event,
+    subServiceData,
+    serviceData,
+    serviceIndex
+  ) => {
     if (event.target.checked) {
-      setSelectedSubServices((prevSelected) => [
-        ...prevSelected,
-        subServiceData.name,
-      ]);
+      setSelectedSubServices((prevSelected) => {
+        const selectedSubServicesCopy = { ...prevSelected };
+
+        if (!selectedSubServicesCopy[serviceIndex]) {
+          // Initialize the array if it doesn't exist
+          selectedSubServicesCopy[serviceIndex] = [];
+        }
+
+        selectedSubServicesCopy[serviceIndex].push(subServiceData.name);
+
+        return selectedSubServicesCopy;
+      });
 
       setServiceName((prevSelected) => [
         ...prevSelected,
@@ -199,9 +226,15 @@ const Navbar = () => {
         subServiceData.weightage * serviceData.rate,
       ]);
     } else {
-      setSelectedSubServices((prevSelected) =>
-        prevSelected.filter((selected) => selected !== subServiceData.name)
-      );
+      setSelectedSubServices((prevSelected) => {
+        const selectedSubServicesCopy = { ...prevSelected };
+
+        selectedSubServicesCopy[serviceIndex] = selectedSubServicesCopy[
+          serviceIndex
+        ].filter((selected) => selected !== subServiceData.name);
+
+        return selectedSubServicesCopy;
+      });
 
       setServiceName((prevSelected) =>
         prevSelected.filter(
@@ -309,7 +342,7 @@ const Navbar = () => {
         break;
 
       case 5:
-        if (phone.trim() === "" || !/^(\+92)?\d{11}$|^\d{11}$/.test(phone)) {
+        if (phone.trim() === "" || !/^(\+\d{12}|\d{11})$/.test(phone)) {
           setPhoneError(true);
         } else {
           setPhone(phone);
@@ -324,9 +357,9 @@ const Navbar = () => {
         } else {
           setEmail(email);
           setEmailError(false);
-        }
 
-        finish();
+          finish();
+        }
         break;
     }
   };
@@ -345,20 +378,6 @@ const Navbar = () => {
 
   const finish = async () => {
     setLoader(true);
-
-    console.log("name", name);
-    console.log("email", email);
-    console.log("contact", phone);
-    console.log("country", country);
-    console.log("city", city);
-    console.log("block", street);
-    console.log("house_plot", plot);
-    console.log("propertySizeInSqft", area);
-    console.log("property_size", propertySize);
-    console.log("property_type", type);
-    console.log("service_names", selectedSubServices);
-    console.log("total_property_price", propertyPrice);
-    console.log("total_rate", totalWeightage);
 
     const postData = {
       name: name,
@@ -563,13 +582,19 @@ const Navbar = () => {
                             {services?.map((serviceData, serviceIndex) => (
                               <Box
                                 key={serviceIndex}
-                                onClick={() => setHoveredIndex(serviceIndex)}
+                                onClick={(event) =>
+                                  handleServiceBoxClick(serviceIndex, event)
+                                }
                                 sx={{
                                   ...styles.serviceBox,
-                                  transform:
-                                    hoveredIndex === serviceIndex
-                                      ? "rotateY(180deg)"
-                                      : "rotateY(0deg)",
+                                  backgroundColor:
+                                    flippedServices.includes(serviceIndex) &&
+                                    "#ededed",
+                                  transform: flippedServices.includes(
+                                    serviceIndex
+                                  )
+                                    ? "rotateY(180deg)"
+                                    : "rotateY(0deg)",
                                 }}
                               >
                                 <Box sx={styles.front}>
@@ -592,9 +617,9 @@ const Navbar = () => {
                                         >
                                           <Checkbox
                                             size="xsmall"
-                                            checked={selectedSubServices.includes(
-                                              subServiceData.name
-                                            )}
+                                            checked={selectedSubServices[
+                                              serviceIndex
+                                            ]?.includes(subServiceData.name)}
                                             sx={{
                                               ...styles.checkbox,
                                               "&.Mui-checked": {

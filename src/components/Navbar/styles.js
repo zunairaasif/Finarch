@@ -126,9 +126,9 @@ const styles = {
     flexDirection: "column",
   },
   serviceBox: {
-    height: 200,
-    width: 180,
     padding: 1,
+    width: 180,
+    height: 200,
     borderRadius: 2,
     display: "flex",
     justifyContent: "center",
