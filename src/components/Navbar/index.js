@@ -178,7 +178,6 @@ const Navbar = () => {
   //************* CHECKBOX ********** */
 
   const handleServiceBoxClick = (serviceIndex, event) => {
-    console.log(serviceIndex);
     const isCheckbox =
       event.target.tagName === "INPUT" && event.target.type === "checkbox";
 
