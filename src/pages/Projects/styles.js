@@ -56,15 +56,6 @@ const styles = {
     overflow: "hidden",
     whiteSpace: "nowrap",
   },
-  img: {
-    margin: "0 10px",
-    userDrag: "none",
-    pointerEvents: "none",
-  },
-  title: {
-    display: "flex",
-    marginBottom: 2,
-  },
   flex: {
     display: "flex",
   },
@@ -82,9 +73,14 @@ const styles = {
     alignItems: "flex-end",
     flexDirection: "column",
   },
-  imageContainer: {
+  img: {
+    margin: "0 10px",
+    userDrag: "none",
+    pointerEvents: "none",
+  },
+  title: {
     display: "flex",
-    justifyContent: "center",
+    marginBottom: 2,
   },
 };
 export default styles;

@@ -1,16 +1,18 @@
 import axios from "axios";
-import Slider from "react-slick";
-import { Box } from "@mui/material";
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
+import { Box, useTheme } from "@mui/material";
 import React, { useState, useEffect } from "react";
+import SwipeableViews from "react-swipeable-views";
+import { autoPlay } from "react-swipeable-views-utils";
 import CircularProgress from "@mui/material/CircularProgress";
 
 import styles from "./styles";
 import Navbar from "../../components/Navbar";
 import logo from "../../assets/images/loading-logo.svg";
 
+const AutoPlaySwipeableViews = autoPlay(SwipeableViews);
+
 const Home = () => {
+  const theme = useTheme();
   const [images, setImages] = useState([]);
   const [isLoading, setLoading] = useState(true);
   const baseUrl = process.env.REACT_APP_BASE_URL;
@@ -32,14 +34,10 @@ const Home = () => {
     fetchSliderData();
   }, [baseUrl]);
 
-  const settings = {
-    speed: 500,
-    infinite: true,
-    autoplay: true,
-    slidesToShow: 1,
-    slidesToScroll: 1,
-    autoplaySpeed: 3500,
-    pauseOnHover: false,
+  const [activeStep, setActiveStep] = React.useState(0);
+
+  const handleStepChange = (step) => {
+    setActiveStep(step);
   };
 
   return (
@@ -53,11 +51,37 @@ const Home = () => {
         <Box sx={styles.cover}>
           <Navbar />
           {images.length > 0 && (
-            <Slider {...settings}>
-              {images.map((data) => (
-                <img width={10} key={data.id} alt={data.id} src={data.image} />
+            <AutoPlaySwipeableViews
+              axis={theme.direction === "rtl" ? "x-reverse" : "x"}
+              index={activeStep}
+              onChangeIndex={handleStepChange}
+              enableMouseEvents
+              style={{
+                height: "88vh",
+                overflow: "hidden",
+              }}
+            >
+              {images.map((data, index) => (
+                <div
+                  key={index}
+                  style={{
+                    height: "88vh",
+                    width: "100%",
+                    overflow: "hidden",
+                  }}
+                >
+                  <img
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "fill",
+                    }}
+                    src={data.image}
+                    alt={index}
+                  />
+                </div>
               ))}
-            </Slider>
+            </AutoPlaySwipeableViews>
           )}
         </Box>
       )}

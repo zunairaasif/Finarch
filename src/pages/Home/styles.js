@@ -13,7 +13,6 @@ const styles = {
   cover: {
     height: "100vh",
     overflow: "hidden",
-    alignItems: "center",
   },
 };
 export default styles;
