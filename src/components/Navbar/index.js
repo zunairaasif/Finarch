@@ -18,6 +18,7 @@ import axios from "axios";
 import Slide from "@mui/material/Slide";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
+import ErrorIcon from "@mui/icons-material/Error";
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import CircularProgress from "@mui/material/CircularProgress";
@@ -63,6 +64,7 @@ const Navbar = () => {
   const baseUrl = process.env.REACT_APP_BASE_URL;
   const [anchorEl, setAnchorEl] = useState(null);
   const [weightage, setWeightage] = useState([]);
+  const [download, setDownload] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
   const [isMenuOpen, setMenuOpen] = useState(false);
   const [showError, setShowError] = useState(false);
@@ -82,8 +84,10 @@ const Navbar = () => {
   const [totalWeightage, setTotalWeightage] = useState(null);
   const [flippedServices, setFlippedServices] = useState([]);
   const isMatch = useMediaQuery(theme.breakpoints.down("sm"));
+  const [isServiceIdChecked, setServiceIdChecked] = useState([]);
   const [isMenuIconRotated, setMenuIconRotation] = useState(false);
   const [selectedSubServices, setSelectedSubServices] = useState([]);
+  const [isServiceId13Checked, setServiceId13Checked] = useState([]);
 
   //************* OPEN QUOTATION ********** */
 
@@ -175,7 +179,7 @@ const Navbar = () => {
       });
   }, [baseUrl]);
 
-  //************* CHECKBOX ********** */
+  //************* FLIP SERVICES ********** */
 
   const handleServiceBoxClick = (serviceIndex, event) => {
     const isCheckbox =
@@ -205,6 +209,16 @@ const Navbar = () => {
 
   const handleCheckboxChange = (event, subServiceData, serviceData) => {
     if (event.target.checked) {
+      if (subServiceData.service_id === 13) {
+        setServiceId13Checked(true);
+      } else if (isServiceId13Checked) {
+        setServiceId13Checked(false);
+      }
+
+      if (subServiceData.service_id !== 13) {
+        setServiceIdChecked(true);
+      }
+
       setSelectedSubServices((prevSelected) => [
         ...prevSelected,
         subServiceData.name,
@@ -220,6 +234,13 @@ const Navbar = () => {
         subServiceData.weightage * serviceData.rate,
       ]);
     } else {
+      if (subServiceData.service_id === 13) {
+        setServiceId13Checked(false);
+      }
+      if (subServiceData.service_id !== 13) {
+        setServiceIdChecked(false);
+      }
+
       setSelectedSubServices((prevSelected) =>
         prevSelected.filter((selected) => selected !== subServiceData.name)
       );
@@ -360,6 +381,7 @@ const Navbar = () => {
 
   const handleClickFinalClose = () => {
     setOpenFinal(false);
+    setDownload(false);
   };
 
   //************* POST QUOTATION ********** */
@@ -409,6 +431,7 @@ const Navbar = () => {
         .catch((error) => {
           console.error("Get quotation Error:", error);
           setLoading(false);
+          setDownload(true);
         });
     } catch (error) {
       console.error("Post quotation Error:", error);
@@ -608,6 +631,14 @@ const Navbar = () => {
                                             checked={selectedSubServices.includes(
                                               subServiceData.name
                                             )}
+                                            disabled={
+                                              (isServiceId13Checked &&
+                                                subServiceData.service_id !==
+                                                  13) ||
+                                              (isServiceIdChecked &&
+                                                subServiceData.service_id ===
+                                                  13)
+                                            }
                                             sx={{
                                               ...styles.checkbox,
                                               "&.Mui-checked": {
@@ -618,7 +649,8 @@ const Navbar = () => {
                                               handleCheckboxChange(
                                                 event,
                                                 subServiceData,
-                                                serviceData
+                                                serviceData,
+                                                isServiceId13Checked
                                               )
                                             }
                                           />
@@ -950,38 +982,47 @@ const Navbar = () => {
                       onClick={handleClickFinalClose}
                     />
 
-                    <Grid container gap={3} sx={styles.lastStep}>
-                      <CheckCircleIcon sx={styles.icon} />
-
-                      <Typography variant="h5">
-                        The cost for your {quote.service_names} is{" "}
-                        {quote.quotation_amount} PKR
-                      </Typography>
-
-                      <Box>
-                        <Typography variant="body1">
-                          Thank you for obtaining a quote from FINARCH. Thank
-                          you for obtaining a quote from FINARCH.
+                    {download ? (
+                      <Grid container gap={3} sx={styles.info}>
+                        <ErrorIcon sx={styles.icon} />
+                        <Typography variant="h6">
+                          Sorry! We are unable to load your PDF file.
                         </Typography>
-                        <Typography variant="body1">
-                          Our manager will send your a written quote and call
-                          you to discuss shortly.
-                        </Typography>
-                        <Typography variant="body1">
-                          We have also sent the Quotation via Email to your
-                          provided email address.
-                        </Typography>
-                      </Box>
+                      </Grid>
+                    ) : (
+                      <Grid container gap={3} sx={styles.lastStep}>
+                        <CheckCircleIcon sx={styles.icon} />
 
-                      <Button
-                        fullWidth
-                        variant="contained"
-                        sx={styles.download}
-                        onClick={() => window.open(quote.pdf_url, "_blank")}
-                      >
-                        Download PDF
-                      </Button>
-                    </Grid>
+                        <Typography variant="h5">
+                          The cost for your {quote.service_names} is{" "}
+                          {quote.quotation_amount} PKR
+                        </Typography>
+
+                        <Box>
+                          <Typography variant="body1">
+                            Thank you for obtaining a quote from FINARCH. Thank
+                            you for obtaining a quote from FINARCH.
+                          </Typography>
+                          <Typography variant="body1">
+                            Our manager will send your a written quote and call
+                            you to discuss shortly.
+                          </Typography>
+                          <Typography variant="body1">
+                            We have also sent the Quotation via Email to your
+                            provided email address.
+                          </Typography>
+                        </Box>
+
+                        <Button
+                          fullWidth
+                          variant="contained"
+                          sx={styles.download}
+                          onClick={() => window.open(quote.pdf_url, "_blank")}
+                        >
+                          Download PDF
+                        </Button>
+                      </Grid>
+                    )}
                   </Grid>
                 </Grid>
               )}
