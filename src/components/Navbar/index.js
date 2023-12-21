@@ -84,10 +84,10 @@ const Navbar = () => {
   const [totalWeightage, setTotalWeightage] = useState(null);
   const [flippedServices, setFlippedServices] = useState([]);
   const isMatch = useMediaQuery(theme.breakpoints.down("sm"));
-  const [isServiceIdChecked, setServiceIdChecked] = useState([]);
   const [isMenuIconRotated, setMenuIconRotation] = useState(false);
+  const [isServiceIdChecked, setServiceIdChecked] = useState(false);
   const [selectedSubServices, setSelectedSubServices] = useState([]);
-  const [isServiceId13Checked, setServiceId13Checked] = useState([]);
+  const [isServiceId13Checked, setServiceId13Checked] = useState(false);
 
   //************* OPEN QUOTATION ********** */
 
@@ -125,6 +125,8 @@ const Navbar = () => {
     setPropertyColor(null);
     setTotalWeightage(null);
     setSelectedSubServices([]);
+    setServiceIdChecked(false);
+    setServiceId13Checked(false);
   };
 
   useEffect(() => {
@@ -380,8 +382,9 @@ const Navbar = () => {
   };
 
   const handleClickFinalClose = () => {
-    setOpenFinal(false);
+    setQuote([]);
     setDownload(false);
+    setOpenFinal(false);
   };
 
   //************* POST QUOTATION ********** */
