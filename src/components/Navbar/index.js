@@ -88,6 +88,7 @@ const Navbar = () => {
   const [isServiceIdChecked, setServiceIdChecked] = useState(false);
   const [selectedSubServices, setSelectedSubServices] = useState([]);
   const [isServiceId13Checked, setServiceId13Checked] = useState(false);
+  const [selectedSubServicesNames, setSelectedSubServicesNames] = useState([]);
 
   //************* OPEN QUOTATION ********** */
 
@@ -127,6 +128,7 @@ const Navbar = () => {
     setSelectedSubServices([]);
     setServiceIdChecked(false);
     setServiceId13Checked(false);
+    setSelectedSubServicesNames([]);
   };
 
   useEffect(() => {
@@ -134,11 +136,6 @@ const Navbar = () => {
       handleReset();
     }
   }, [open]);
-
-  useEffect(() => {
-    console.log("service name", serviceName);
-    console.log("sub services", selectedSubServices);
-  }, [serviceName, selectedSubServices]);
 
   //************* BACK CLICK ********** */
 
@@ -228,8 +225,18 @@ const Navbar = () => {
 
       setSelectedSubServices((prevSelected) => [
         ...prevSelected,
-        subServiceData.name,
+        subServiceData.id,
       ]);
+
+      setSelectedSubServicesNames((prevSelectedNames) => {
+        const selectedData = serviceData.subServices.find(
+          (data) => data.id === subServiceData.id
+        );
+
+        return selectedData
+          ? [...prevSelectedNames, selectedData.name]
+          : prevSelectedNames;
+      });
 
       setServiceName((prevSelected) => [
         ...prevSelected,
@@ -249,18 +256,22 @@ const Navbar = () => {
       }
 
       setSelectedSubServices((prevSelected) =>
-        prevSelected.filter((selected) => selected !== subServiceData.name)
+        prevSelected.filter((selected) => selected !== subServiceData.id)
       );
 
-      setServiceName((prevSelected) =>
-        prevSelected.filter(
-          (selected) => selected !== subServiceData.service_name
-        )
-      );
+      setSelectedSubServicesNames((prevSelected) => {
+        const indexToRemove = selectedSubServices.indexOf(subServiceData.id);
+        return prevSelected.filter((_, index) => index !== indexToRemove);
+      });
+
+      setServiceName((prevSelected) => {
+        const indexToRemove = selectedSubServices.indexOf(subServiceData.id);
+        return prevSelected.filter((_, index) => index !== indexToRemove);
+      });
 
       setWeightage((prevSelected) =>
         prevSelected.filter(
-          (_, index) => selectedSubServices[index] !== subServiceData.name
+          (_, index) => selectedSubServices[index] !== subServiceData.id
         )
       );
     }
@@ -406,7 +417,7 @@ const Navbar = () => {
       propertySizeInSqft: area,
       property_size: propertySize,
       property_type: type,
-      service_names: selectedSubServices,
+      service_names: selectedSubServicesNames,
       categories_name: serviceName,
       total_property_price: propertyPrice,
       total_rate: totalWeightage,
@@ -635,7 +646,7 @@ const Navbar = () => {
                                           <Checkbox
                                             size="xsmall"
                                             checked={selectedSubServices.includes(
-                                              subServiceData.name
+                                              subServiceData.id
                                             )}
                                             disabled={
                                               (isServiceId13Checked &&
