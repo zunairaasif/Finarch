@@ -10,8 +10,8 @@ const styles = {
   aboutView: {
     marginTop: 7,
     display: "flex",
-    paddingLeft: 13,
-    paddingRight: 13,
+    paddingLeft: 10,
+    paddingRight: 10,
     paddingBottom: 6,
     flexDirection: "column",
   },

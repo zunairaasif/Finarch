@@ -129,18 +129,21 @@ const About = () => {
                     }}
                   >
                     <Box sx={styles.front}>
-                      <Typography sx={styles.name}>
+                      <Typography sx={styles.name} variant="h6">
                         {data.service_name}
                       </Typography>
                     </Box>
 
                     <Box sx={styles.back}>
-                      <Typography sx={styles.service}>
+                      <Typography sx={styles.service} variant="h6">
                         {data.service_name}
                       </Typography>
                       <Grid container gap={1} sx={styles.backContent}>
                         {data.subServices.map((data, index) => (
-                          <Typography variant="body2" key={index}>
+                          <Typography
+                            variant={isMatch ? "caption" : "body2"}
+                            key={index}
+                          >
                             {data.name}
                           </Typography>
                         ))}
