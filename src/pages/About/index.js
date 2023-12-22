@@ -1,33 +1,40 @@
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import CircularProgress from "@mui/material/CircularProgress";
 import { Box, Grid, Typography, useMediaQuery, useTheme } from "@mui/material";
 
+import {
+  setServices,
+  setLoading,
+  setHoveredIndex,
+} from "../../components/Redux/Reducers/aboutSlice";
 import styles from "./styles";
 import Navbar from "../../components/Navbar";
 
 const About = () => {
   const theme = useTheme();
-  const [services, setServices] = useState([]);
-  const [isLoading, setLoading] = useState(true);
+  const dispatch = useDispatch();
   const baseUrl = process.env.REACT_APP_BASE_URL;
-  const [hoveredIndex, setHoveredIndex] = useState(null);
   const isMatch = useMediaQuery(theme.breakpoints.down("md"));
+  const { services, loading, hoveredIndex } = useSelector(
+    (state) => state.about
+  );
 
   useEffect(() => {
-    setLoading(true);
+    dispatch(setLoading(true));
     axios
       .get(`${baseUrl}/service/getAllServices`)
       .then((response) => {
         const service = response.data.data;
-        setServices(service);
-        setLoading(false);
+        dispatch(setServices(service));
+        dispatch(setLoading(false));
       })
       .catch((error) => {
         console.error("Error:", error);
-        setLoading(false);
+        dispatch(setLoading(false));
       });
-  }, [baseUrl]);
+  }, [baseUrl, dispatch]);
 
   return (
     <Grid>
@@ -103,7 +110,7 @@ const About = () => {
           </Typography>
 
           <Grid container spacing={2} sx={styles.subServices}>
-            {isLoading ? (
+            {loading ? (
               <Box sx={styles.loader}>
                 <CircularProgress sx={styles.loaderColor} />
               </Box>
@@ -116,8 +123,8 @@ const About = () => {
                   sm={6}
                   md={4}
                   lg={4}
-                  onMouseEnter={() => setHoveredIndex(index)}
-                  onMouseLeave={() => setHoveredIndex(null)}
+                  onMouseEnter={() => dispatch(setHoveredIndex(index))}
+                  onMouseLeave={() => dispatch(setHoveredIndex(null))}
                 >
                   <Box
                     sx={{
