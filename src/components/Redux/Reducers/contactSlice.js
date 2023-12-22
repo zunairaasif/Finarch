@@ -3,8 +3,6 @@ import { createSlice } from "@reduxjs/toolkit";
 const initialState = {
   contact: [],
   loading: false,
-  errorSnackbar: false,
-  successSnackbar: false,
 };
 
 const contactSlice = createSlice({
@@ -17,16 +15,9 @@ const contactSlice = createSlice({
     setLoading(state, action) {
       state.loading = action.payload;
     },
-    setSuccessSnackbar(action, state) {
-      state.successSnackbar = action.payload;
-    },
-    setErrorSnackbar(action, state) {
-      state.errorSnackbar = action.payload;
-    },
   },
 });
 
-export const { setContact, setLoading, setSuccessSnackbar, setErrorSnackbar } =
-  contactSlice.actions;
+export const { setContact, setLoading } = contactSlice.actions;
 
 export default contactSlice.reducer;
