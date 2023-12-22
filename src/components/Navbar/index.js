@@ -113,9 +113,9 @@ const Navbar = () => {
     setEmail("");
     setStreet("");
     setLength("");
-    setCountry("");
     setArea(null);
     setColor(null);
+    setCountry("");
     setChecked(true);
     setWeightage([]);
     setServiceName([]);
@@ -134,6 +134,11 @@ const Navbar = () => {
       handleReset();
     }
   }, [open]);
+
+  useEffect(() => {
+    console.log("service name", serviceName);
+    console.log("sub services", selectedSubServices);
+  }, [serviceName, selectedSubServices]);
 
   //************* BACK CLICK ********** */
 
@@ -228,7 +233,7 @@ const Navbar = () => {
 
       setServiceName((prevSelected) => [
         ...prevSelected,
-        { [subServiceData.service_name]: subServiceData.name },
+        subServiceData.service_name,
       ]);
 
       setWeightage((prevSelected) => [
@@ -249,9 +254,7 @@ const Navbar = () => {
 
       setServiceName((prevSelected) =>
         prevSelected.filter(
-          (selected) =>
-            Object.keys(selected)[0] !== subServiceData.service_name ||
-            selected[subServiceData.service_name] !== subServiceData.name
+          (selected) => selected !== subServiceData.service_name
         )
       );
 
@@ -404,7 +407,7 @@ const Navbar = () => {
       property_size: propertySize,
       property_type: type,
       service_names: selectedSubServices,
-      // service_names: serviceName,
+      categories_name: serviceName,
       total_property_price: propertyPrice,
       total_rate: totalWeightage,
     };
