@@ -15,41 +15,36 @@ import * as Yup from "yup";
 import CallIcon from "@mui/icons-material/Call";
 import EmailIcon from "@mui/icons-material/Email";
 import React, { useEffect, useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import CircularProgress from "@mui/material/CircularProgress";
 
-import {
-  setContact,
-  setLoading,
-} from "../../components/Redux/Reducers/contactSlice";
 import styles from "./styles";
 import Navbar from "../../components/Navbar";
 
 const Contact = () => {
   const theme = useTheme();
-  const dispatch = useDispatch();
+  const [contact, setContact] = useState([]);
+  const [isLoading, setLoading] = useState(true);
   const baseUrl = process.env.REACT_APP_BASE_URL;
   const [errorSnackbar, setErrorSnackbar] = useState(false);
-  const [successSnackbar, setSuccessSnackbar] = useState(false);
   const isMatch = useMediaQuery(theme.breakpoints.down("md"));
-  const { contact, loading } = useSelector((state) => state.contact);
+  const [successSnackbar, setSuccessSnackbar] = useState(false);
 
   useEffect(() => {
-    dispatch(setLoading(true));
+    setLoading(true);
     axios
       .get(`${baseUrl}/contact/getOffices`)
       .then((response) => {
         const contacts = response.data.data;
-        dispatch(setContact(contacts));
-        dispatch(setLoading(false));
+        setContact(contacts);
+        setLoading(false);
       })
       .catch((error) => {
         console.error("Error:", error);
-        dispatch(setLoading(false));
+        setLoading(false);
       });
-  }, [baseUrl, dispatch]);
+  }, [baseUrl]);
 
   const validationSchema = Yup.object().shape({
     name: Yup.string().max(25).required("Required"),
@@ -113,7 +108,7 @@ const Contact = () => {
           <Grid item md={5} gap={5} container sx={styles.contact}>
             <Typography variant="h4">Our Locations</Typography>
 
-            {loading ? (
+            {isLoading ? (
               <Box sx={styles.loader}>
                 <CircularProgress sx={styles.loaderColor} />
               </Box>

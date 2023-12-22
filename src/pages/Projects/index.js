@@ -8,60 +8,46 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import axios from "axios";
-import React, { useEffect, useRef } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import React, { useState, useEffect, useRef } from "react";
 import CircularProgress from "@mui/material/CircularProgress";
 
-import {
-  setValue,
-  setImages,
-  setStartX,
-  setAnimate,
-  setLoading,
-  setProjects,
-  setScrollLeft,
-  setIsDragging,
-} from "../../components/Redux/Reducers/projectsSlice";
 import styles from "./styles";
 import Navbar from "../../components/Navbar";
 
 const Projects = () => {
   const theme = useTheme();
-  const dispatch = useDispatch();
   const containerRef = useRef(null);
+  const [images, setImages] = useState([]);
+  const [startX, setStartX] = useState(null);
+  const [project, setProject] = useState([]);
+  const [animate, setAnimate] = useState("");
+  const [value, setValue] = React.useState(0);
+  const [isLoading, setLoading] = useState(true);
   const baseUrl = process.env.REACT_APP_BASE_URL;
+  const [scrollLeft, setScrollLeft] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
   const isMatch = useMediaQuery(theme.breakpoints.down("sm"));
-  const {
-    value,
-    images,
-    startX,
-    animate,
-    loading,
-    projects,
-    scrollLeft,
-    isDragging,
-  } = useSelector((state) => state.projects);
 
   useEffect(() => {
-    dispatch(setLoading(true));
+    setLoading(true);
     axios
       .get(`${baseUrl}/projects/getAllProjects`)
       .then((response) => {
-        const project = response.data.data;
-        dispatch(setProjects(project));
+        const projects = response.data.data;
+        setProject(projects);
 
         const image = response.data.data.map((data) => data.project_images);
-        dispatch(setImages(image));
-        dispatch(setLoading(false));
+        setImages(image);
+        setLoading(false);
       })
       .catch((error) => {
         console.error("Error:", error);
-        dispatch(setLoading(false));
+        setLoading(false);
       });
-  }, [baseUrl, dispatch]);
+  }, [baseUrl]);
 
   const handleChange = (event, newValue) => {
-    dispatch(setValue(newValue));
+    setValue(newValue);
   };
 
   const getTabType = (tabIndex) => {
@@ -81,13 +67,13 @@ const Projects = () => {
 
   const filteredProjects =
     value === 0
-      ? projects
-      : projects.filter((data) => data.type === getTabType(value));
+      ? project
+      : project.filter((data) => data.type === getTabType(value));
 
   const handleMouseDown = (e) => {
-    dispatch(setIsDragging(true));
-    dispatch(setStartX(e.pageX));
-    dispatch(setScrollLeft(containerRef.current.scrollLeft));
+    setIsDragging(true);
+    setStartX(e.pageX);
+    setScrollLeft(containerRef.current.scrollLeft);
   };
 
   const handleMouseMove = (e) => {
@@ -100,14 +86,14 @@ const Projects = () => {
   };
 
   const handleMouseUp = () => {
-    dispatch(setIsDragging(false));
+    setIsDragging(false);
   };
 
   const handleTouchStart = (e) => {
     if (containerRef.current) {
-      dispatch(setIsDragging(true));
-      dispatch(setStartX(e.touches[0].pageX));
-      dispatch(setScrollLeft(containerRef.current.scrollLeft));
+      setIsDragging(true);
+      setStartX(e.touches[0].pageX);
+      setScrollLeft(containerRef.current.scrollLeft);
     }
   };
 
@@ -121,7 +107,7 @@ const Projects = () => {
 
   const handleTouchEnd = () => {
     if (containerRef.current) {
-      dispatch(setIsDragging(false));
+      setIsDragging(false);
     }
   };
 
@@ -162,7 +148,7 @@ const Projects = () => {
           </Tabs>
         </Box>
 
-        {loading ? (
+        {isLoading ? (
           <Box sx={styles.loader}>
             <CircularProgress sx={styles.loaderColor} />
           </Box>
@@ -186,7 +172,7 @@ const Projects = () => {
                 md={9.5}
                 container
                 key={index}
-                onClick={() => dispatch(setAnimate(index))}
+                onClick={() => setAnimate(index)}
                 sx={animate === index ? styles.zoom : styles.container}
               >
                 {animate === index ? (

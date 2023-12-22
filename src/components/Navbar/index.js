@@ -40,6 +40,9 @@ const Navbar = () => {
   const theme = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
+  const baseUrl = process.env.REACT_APP_BASE_URL;
+  const isMatch = useMediaQuery(theme.breakpoints.down("sm"));
+
   const [name, setName] = useState("");
   const [plot, setPlot] = useState("");
   const [city, setCity] = useState("");
@@ -61,7 +64,6 @@ const Navbar = () => {
   const [services, setServices] = useState([]);
   const [open, setOpen] = React.useState(false);
   const [loading, setLoading] = useState(false);
-  const baseUrl = process.env.REACT_APP_BASE_URL;
   const [anchorEl, setAnchorEl] = useState(null);
   const [weightage, setWeightage] = useState([]);
   const [download, setDownload] = useState(false);
@@ -83,7 +85,6 @@ const Navbar = () => {
   const [propertyPrice, setPropertyPrice] = useState(null);
   const [totalWeightage, setTotalWeightage] = useState(null);
   const [flippedServices, setFlippedServices] = useState([]);
-  const isMatch = useMediaQuery(theme.breakpoints.down("sm"));
   const [isMenuIconRotated, setMenuIconRotation] = useState(false);
   const [isServiceIdChecked, setServiceIdChecked] = useState(false);
   const [selectedSubServices, setSelectedSubServices] = useState([]);

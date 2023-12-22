@@ -1,16 +1,10 @@
 import axios from "axios";
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import SwipeableViews from "react-swipeable-views";
 import { Box, useTheme, Stack } from "@mui/material";
 import { autoPlay } from "react-swipeable-views-utils";
-import { useDispatch, useSelector } from "react-redux";
 import CircularProgress from "@mui/material/CircularProgress";
 
-import {
-  setImages,
-  setLoading,
-  setActiveStep,
-} from "../../components/Redux/Reducers/homeSlice";
 import styles from "./styles";
 import Navbar from "../../components/Navbar";
 import logo from "../../assets/images/loading-logo.svg";
@@ -19,34 +13,36 @@ const AutoPlaySwipeableViews = autoPlay(SwipeableViews);
 
 const Home = () => {
   const theme = useTheme();
-  const dispatch = useDispatch();
+  const [images, setImages] = useState([]);
+  const [isLoading, setLoading] = useState(true);
   const baseUrl = process.env.REACT_APP_BASE_URL;
-  const { images, loading, activeStep } = useSelector((state) => state.home);
 
   useEffect(() => {
     const fetchSliderData = async () => {
       try {
-        dispatch(setLoading(true));
+        setLoading(true);
         const response = await axios.get(`${baseUrl}/slider/getSlider`);
         const imageData = response.data.data;
-        dispatch(setImages(imageData));
-        dispatch(setLoading(false));
+        setImages(imageData);
+        setLoading(false);
       } catch (error) {
         console.error("Error:", error);
-        dispatch(setLoading(false));
+        setLoading(false);
       }
     };
 
     fetchSliderData();
-  }, [baseUrl, dispatch]);
+  }, [baseUrl]);
+
+  const [activeStep, setActiveStep] = React.useState(0);
 
   const handleStepChange = (step) => {
-    dispatch(setActiveStep(step));
+    setActiveStep(step);
   };
 
   return (
     <>
-      {loading ? (
+      {isLoading ? (
         <Box gap={4} sx={styles.loader}>
           <img src={logo} alt="logo" width={200} />
           <CircularProgress sx={styles.loaderColor} />

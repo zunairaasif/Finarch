@@ -1,52 +1,46 @@
 import axios from "axios";
-import React, { useEffect, useRef } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import React, { useState, useEffect, useRef } from "react";
 import CircularProgress from "@mui/material/CircularProgress";
 import { Box, Grid, useTheme, Typography, useMediaQuery } from "@mui/material";
 
-import {
-  setNews,
-  setImages,
-  setStartX,
-  setAnimate,
-  setLoading,
-  setScrollLeft,
-  setIsDragging,
-} from "../../components/Redux/Reducers/newsSlice";
 import styles from "./styles";
 import Navbar from "../../components/Navbar";
 
 const News = () => {
   const theme = useTheme();
-  const dispatch = useDispatch();
   const containerRef = useRef(null);
+  const [blog, setBlog] = useState([]);
+  const [images, setImages] = useState([]);
+  const [startX, setStartX] = useState(null);
+  const [animate, setAnimate] = useState("");
+  const [isLoading, setLoading] = useState(true);
   const baseUrl = process.env.REACT_APP_BASE_URL;
+  const [scrollLeft, setScrollLeft] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
   const isMatch = useMediaQuery(theme.breakpoints.down("sm"));
-  const { news, images, startX, animate, loading, scrollLeft, isDragging } =
-    useSelector((state) => state.news);
 
   useEffect(() => {
-    dispatch(setLoading(true));
+    setLoading(true);
     axios
       .get(`${baseUrl}/blog/getBlogs`)
       .then((response) => {
         const blogs = response.data.data;
-        dispatch(setNews(blogs));
+        setBlog(blogs);
 
         const image = response.data.data.map((data) => data.image);
-        dispatch(setImages(image));
-        dispatch(setLoading(false));
+        setImages(image);
+        setLoading(false);
       })
       .catch((error) => {
         console.error("Error:", error);
-        dispatch(setLoading(false));
+        setLoading(false);
       });
-  }, [baseUrl, dispatch]);
+  }, [baseUrl]);
 
   const handleMouseDown = (e) => {
-    dispatch(setIsDragging(true));
-    dispatch(setStartX(e.pageX));
-    dispatch(setScrollLeft(containerRef.current.scrollLeft));
+    setIsDragging(true);
+    setStartX(e.pageX);
+    setScrollLeft(containerRef.current.scrollLeft);
   };
 
   const handleMouseMove = (e) => {
@@ -59,14 +53,14 @@ const News = () => {
   };
 
   const handleMouseUp = () => {
-    dispatch(setIsDragging(false));
+    setIsDragging(false);
   };
 
   const handleTouchStart = (e) => {
     if (containerRef.current) {
-      dispatch(setIsDragging(true));
-      dispatch(setStartX(e.touches[0].pageX));
-      dispatch(setScrollLeft(containerRef.current.scrollLeft));
+      setIsDragging(true);
+      setStartX(e.touches[0].pageX);
+      setScrollLeft(containerRef.current.scrollLeft);
     }
   };
 
@@ -80,7 +74,7 @@ const News = () => {
 
   const handleTouchEnd = () => {
     if (containerRef.current) {
-      dispatch(setIsDragging(false));
+      setIsDragging(false);
     }
   };
 
@@ -88,12 +82,12 @@ const News = () => {
     <>
       <Navbar />
       <Grid gap={6} container sx={styles.news}>
-        {loading ? (
+        {isLoading ? (
           <Box sx={styles.loader}>
             <CircularProgress sx={styles.loaderColor} />
           </Box>
-        ) : news.length > 0 ? (
-          news.map((data, index) => {
+        ) : blog.length > 0 ? (
+          blog.map((data, index) => {
             const parsedImages = JSON.parse(images[index]);
             return (
               <Grid
@@ -103,7 +97,7 @@ const News = () => {
                 md={9.5}
                 container
                 key={index}
-                onClick={() => dispatch(setAnimate(index))}
+                onClick={() => setAnimate(index)}
                 sx={animate === index ? styles.zoom : styles.container}
               >
                 {animate === index ? (
