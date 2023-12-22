@@ -1,33 +1,38 @@
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import CircularProgress from "@mui/material/CircularProgress";
 import { Box, Grid, Typography, useMediaQuery, useTheme } from "@mui/material";
 
+import {
+  setTeam,
+  setHover,
+  setLoading,
+} from "../../components/Redux/Reducers/teamSlice";
 import styles from "./styles";
 import Navbar from "../../components/Navbar";
 
 const Team = () => {
   const theme = useTheme();
-  const [team, setTeam] = useState([]);
-  const [hover, setHover] = useState(null);
-  const [isLoading, setLoading] = useState(true);
+  const dispatch = useDispatch();
   const baseUrl = process.env.REACT_APP_BASE_URL;
   const isMatch = useMediaQuery(theme.breakpoints.down("md"));
+  const { team, loading, hover } = useSelector((state) => state.team);
 
   useEffect(() => {
-    setLoading(true);
+    dispatch(setLoading(true));
     axios
       .get(`${baseUrl}/team/getTeam`)
       .then((response) => {
         const teams = response.data.data;
-        setTeam(teams);
-        setLoading(false);
+        dispatch(setTeam(teams));
+        dispatch(setLoading(false));
       })
       .catch((error) => {
         console.error("Error:", error);
-        setLoading(false);
+        dispatch(setLoading(false));
       });
-  }, [baseUrl]);
+  }, [baseUrl, dispatch]);
 
   return (
     <Grid>
@@ -42,7 +47,7 @@ const Team = () => {
           spacing={5}
           sx={isMatch ? styles.descriptionView : styles.description}
         >
-          {isLoading ? (
+          {loading ? (
             <Box sx={styles.loader}>
               <CircularProgress sx={styles.loaderColor} />
             </Box>
@@ -58,8 +63,8 @@ const Team = () => {
                 container
                 key={index}
                 sx={styles.container}
-                onMouseEnter={() => setHover(index)}
-                onMouseLeave={() => setHover(null)}
+                onMouseEnter={() => dispatch(setHover(index))}
+                onMouseLeave={() => dispatch(setHover(null))}
               >
                 <Box sx={styles.image}>
                   <img
