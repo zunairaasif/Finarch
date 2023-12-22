@@ -215,8 +215,6 @@ const Navbar = () => {
     if (event.target.checked) {
       if (subServiceData.service_id === 13) {
         setServiceId13Checked(true);
-      } else if (isServiceId13Checked) {
-        setServiceId13Checked(false);
       }
 
       if (subServiceData.service_id !== 13) {
