@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Box, useTheme } from "@mui/material";
+import { Box, useTheme, Stack } from "@mui/material";
 import React, { useState, useEffect } from "react";
 import SwipeableViews from "react-swipeable-views";
 import { autoPlay } from "react-swipeable-views-utils";
@@ -48,42 +48,25 @@ const Home = () => {
           <CircularProgress sx={styles.loaderColor} />
         </Box>
       ) : (
-        <Box sx={styles.cover}>
+        <Stack sx={styles.cover}>
           <Navbar />
+
           {images.length > 0 && (
             <AutoPlaySwipeableViews
               axis={theme.direction === "rtl" ? "x-reverse" : "x"}
               index={activeStep}
               onChangeIndex={handleStepChange}
               enableMouseEvents
-              style={{
-                height: "88vh",
-                overflow: "hidden",
-              }}
+              style={styles.slider}
             >
               {images.map((data, index) => (
-                <div
-                  key={index}
-                  style={{
-                    height: "88vh",
-                    width: "100%",
-                    overflow: "hidden",
-                  }}
-                >
-                  <img
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "fill",
-                    }}
-                    src={data.image}
-                    alt={index}
-                  />
+                <div key={index} style={styles.imgContainer}>
+                  <img style={styles.img} src={data.image} alt={index} />
                 </div>
               ))}
             </AutoPlaySwipeableViews>
           )}
-        </Box>
+        </Stack>
       )}
     </>
   );

@@ -14,5 +14,19 @@ const styles = {
     height: "100vh",
     overflow: "hidden",
   },
+  slider: {
+    height: "88vh",
+    overflow: "hidden",
+  },
+  imgContainer: {
+    width: "100%",
+    height: "88vh",
+    overflow: "hidden",
+  },
+  img: {
+    width: "100%",
+    height: "100%",
+    objectFit: "fill",
+  },
 };
 export default styles;
