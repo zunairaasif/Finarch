@@ -15,36 +15,41 @@ import * as Yup from "yup";
 import CallIcon from "@mui/icons-material/Call";
 import EmailIcon from "@mui/icons-material/Email";
 import React, { useEffect, useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import CircularProgress from "@mui/material/CircularProgress";
 
+import {
+  setContact,
+  setLoading,
+} from "../../components/Redux/Reducers/contactSlice";
 import styles from "./styles";
 import Navbar from "../../components/Navbar";
 
 const Contact = () => {
   const theme = useTheme();
-  const [contact, setContact] = useState([]);
-  const [isLoading, setLoading] = useState(true);
+  const dispatch = useDispatch();
   const baseUrl = process.env.REACT_APP_BASE_URL;
   const [errorSnackbar, setErrorSnackbar] = useState(false);
-  const isMatch = useMediaQuery(theme.breakpoints.down("md"));
   const [successSnackbar, setSuccessSnackbar] = useState(false);
+  const isMatch = useMediaQuery(theme.breakpoints.down("md"));
+  const { contact, loading } = useSelector((state) => state.contact);
 
   useEffect(() => {
-    setLoading(true);
+    dispatch(setLoading(true));
     axios
       .get(`${baseUrl}/contact/getOffices`)
       .then((response) => {
         const contacts = response.data.data;
-        setContact(contacts);
-        setLoading(false);
+        dispatch(setContact(contacts));
+        dispatch(setLoading(false));
       })
       .catch((error) => {
         console.error("Error:", error);
-        setLoading(false);
+        dispatch(setLoading(false));
       });
-  }, [baseUrl]);
+  }, [baseUrl, dispatch]);
 
   const validationSchema = Yup.object().shape({
     name: Yup.string().max(25).required("Required"),
@@ -56,7 +61,7 @@ const Contact = () => {
 
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
     try {
-      await axios.post(`${baseUrl}/contact/postContactForm`, values);
+      await axios.post(`${baseUrl}/contact/postContactFormabc`, values);
       setSuccessSnackbar(true);
       resetForm();
     } catch (error) {
@@ -108,7 +113,7 @@ const Contact = () => {
           <Grid item md={5} gap={5} container sx={styles.contact}>
             <Typography variant="h4">Our Locations</Typography>
 
-            {isLoading ? (
+            {loading ? (
               <Box sx={styles.loader}>
                 <CircularProgress sx={styles.loaderColor} />
               </Box>
