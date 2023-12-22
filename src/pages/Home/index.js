@@ -1,10 +1,16 @@
 import axios from "axios";
-import { Box, useTheme, Stack } from "@mui/material";
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import SwipeableViews from "react-swipeable-views";
+import { Box, useTheme, Stack } from "@mui/material";
 import { autoPlay } from "react-swipeable-views-utils";
+import { useDispatch, useSelector } from "react-redux";
 import CircularProgress from "@mui/material/CircularProgress";
 
+import {
+  setImages,
+  setLoading,
+  setActiveStep,
+} from "../../components/Redux/Reducers/homeSlice";
 import styles from "./styles";
 import Navbar from "../../components/Navbar";
 import logo from "../../assets/images/loading-logo.svg";
@@ -13,36 +19,34 @@ const AutoPlaySwipeableViews = autoPlay(SwipeableViews);
 
 const Home = () => {
   const theme = useTheme();
-  const [images, setImages] = useState([]);
-  const [isLoading, setLoading] = useState(true);
+  const dispatch = useDispatch();
   const baseUrl = process.env.REACT_APP_BASE_URL;
+  const { images, loading, activeStep } = useSelector((state) => state.home);
 
   useEffect(() => {
     const fetchSliderData = async () => {
       try {
-        setLoading(true);
+        dispatch(setLoading(true));
         const response = await axios.get(`${baseUrl}/slider/getSlider`);
         const imageData = response.data.data;
-        setImages(imageData);
-        setLoading(false);
+        dispatch(setImages(imageData));
+        dispatch(setLoading(false));
       } catch (error) {
         console.error("Error:", error);
-        setLoading(false);
+        dispatch(setLoading(false));
       }
     };
 
     fetchSliderData();
-  }, [baseUrl]);
-
-  const [activeStep, setActiveStep] = React.useState(0);
+  }, [baseUrl, dispatch]);
 
   const handleStepChange = (step) => {
-    setActiveStep(step);
+    dispatch(setActiveStep(step));
   };
 
   return (
     <>
-      {isLoading ? (
+      {loading ? (
         <Box gap={4} sx={styles.loader}>
           <img src={logo} alt="logo" width={200} />
           <CircularProgress sx={styles.loaderColor} />
