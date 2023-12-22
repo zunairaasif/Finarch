@@ -61,7 +61,7 @@ const Contact = () => {
 
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
     try {
-      await axios.post(`${baseUrl}/contact/postContactFormabc`, values);
+      await axios.post(`${baseUrl}/contact/postContactForm`, values);
       setSuccessSnackbar(true);
       resetForm();
     } catch (error) {
