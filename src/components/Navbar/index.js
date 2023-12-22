@@ -52,6 +52,7 @@ const Navbar = () => {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [area, setArea] = useState(null);
+  const [open, setOpen] = useState(false);
   const [color, setColor] = useState(null);
   const [length, setLength] = useState("");
   const [street, setStreet] = useState("");
@@ -62,7 +63,6 @@ const Navbar = () => {
   const [loader, setLoader] = useState(false);
   const [checked, setChecked] = useState(true);
   const [services, setServices] = useState([]);
-  const [open, setOpen] = React.useState(false);
   const [loading, setLoading] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const [weightage, setWeightage] = useState([]);
