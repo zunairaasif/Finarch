@@ -4,6 +4,7 @@ import homeReducer from "../Redux/Reducers/homeSlice";
 import teamReducer from "../Redux/Reducers/teamSlice";
 import aboutReducer from "../Redux/Reducers/aboutSlice";
 import contactReducer from "../Redux/Reducers/contactSlice";
+import projectsReducer from "../Redux/Reducers/projectsSlice";
 
 const store = configureStore({
   reducer: {
@@ -11,6 +12,7 @@ const store = configureStore({
     team: teamReducer,
     about: aboutReducer,
     contact: contactReducer,
+    projects: projectsReducer,
   },
 });
 
