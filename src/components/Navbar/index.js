@@ -655,8 +655,7 @@ const Navbar = () => {
                                               handleCheckboxChange(
                                                 event,
                                                 subServiceData,
-                                                serviceData,
-                                                isServiceId13Checked
+                                                serviceData
                                               )
                                             }
                                           />
