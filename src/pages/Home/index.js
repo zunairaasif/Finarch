@@ -1,7 +1,7 @@
 import axios from "axios";
 import React, { useState, useEffect } from "react";
 import SwipeableViews from "react-swipeable-views";
-import { Box, useTheme, Stack } from "@mui/material";
+import { Box, useTheme } from "@mui/material";
 import { autoPlay } from "react-swipeable-views-utils";
 import CircularProgress from "@mui/material/CircularProgress";
 
