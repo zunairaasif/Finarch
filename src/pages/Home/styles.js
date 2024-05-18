@@ -10,10 +10,6 @@ const styles = {
   loaderColor: {
     color: "white",
   },
-  cover: {
-    height: "100vh",
-    overflow: "hidden",
-  },
   slider: {
     height: "88vh",
     overflow: "hidden",

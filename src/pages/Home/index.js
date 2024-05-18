@@ -48,7 +48,7 @@ const Home = () => {
           <CircularProgress sx={styles.loaderColor} />
         </Box>
       ) : (
-        <Stack sx={styles.cover}>
+        <div>
           <Navbar />
 
           {images.length > 0 && (
@@ -66,7 +66,7 @@ const Home = () => {
               ))}
             </AutoPlaySwipeableViews>
           )}
-        </Stack>
+        </div>
       )}
     </>
   );
